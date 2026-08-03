@@ -7,6 +7,9 @@ import { tenantDb } from "@/server/tenant";
 import { describeEvent } from "@/server/domain/events";
 import { nextStatuses } from "@/server/domain/projection";
 import { shipmentInboundAddress } from "@/server/integrations/routing";
+import { DOCUMENT_LABEL, canSeeDocument, explainVisibility, hiddenFrom } from "@/server/domain/visibility";
+import { PARTY_LABEL } from "@/server/domain/visibility";
+import { PartyAccess, RequestReview } from "@/components/relay";
 import type { ExtractionResult } from "@/server/ai/types";
 import {
   Badge,
@@ -164,6 +167,7 @@ export default async function ShipmentWorkspace({
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{doc.name}</span>
+                          <Badge>{DOCUMENT_LABEL[doc.type]}</Badge>
                           <Badge>v{doc.version}</Badge>
                           {versions.length > 1 ? (
                             <span className="text-[11px] text-muted">
@@ -171,7 +175,18 @@ export default async function ShipmentWorkspace({
                             </span>
                           ) : null}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge tone="info" title={explainVisibility(doc)}>
+                            {explainVisibility(doc)}
+                          </Badge>
+                          {hiddenFrom(doc).length > 0 ? (
+                            <Badge
+                              tone="danger"
+                              title={`Hidden from ${hiddenFrom(doc).map((h) => PARTY_LABEL[h]).join(", ")}`}
+                            >
+                              hidden from {hiddenFrom(doc).map((h) => PARTY_LABEL[h]).join(", ")}
+                            </Badge>
+                          ) : null}
                           <Badge
                             tone={
                               doc.extractionStatus === "CONFIRMED"
@@ -210,6 +225,19 @@ export default async function ShipmentWorkspace({
                             manually.
                           </p>
                         )}
+
+                        <div className="mt-3 border-t border-line pt-3">
+                          <RequestReview
+                            shipmentId={shipment.id}
+                            documentId={doc.id}
+                            parties={shipment.parties.map((p) => ({
+                              id: p.id,
+                              name: p.name,
+                              type: p.type,
+                              allowed: canSeeDocument(p.type, doc),
+                            }))}
+                          />
+                        </div>
                       </div>
                     </div>
                   );
@@ -320,25 +348,24 @@ export default async function ShipmentWorkspace({
 
           <Card>
             <CardHeader>
-              <CardTitle>Parties</CardTitle>
+              <CardTitle>Parties & access</CardTitle>
             </CardHeader>
-            <CardBody className="space-y-2">
-              {shipment.parties.length === 0 ? (
-                <p className="text-xs text-muted">No parties recorded yet.</p>
-              ) : (
-                shipment.parties.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between gap-2 text-xs">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{p.name}</p>
-                      <p className="truncate text-muted">{p.email ?? p.phone ?? "—"}</p>
-                    </div>
-                    <div className="flex shrink-0 gap-1">
-                      <Badge>{p.type.toLowerCase()}</Badge>
-                      <Badge tone="info">{p.channel.toLowerCase()}</Badge>
-                    </div>
-                  </div>
-                ))
-              )}
+            <CardBody>
+              <PartyAccess
+                shipmentId={shipment.id}
+                parties={shipment.parties.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  type: p.type,
+                  email: p.email,
+                  phone: p.phone,
+                  channel: p.channel,
+                  portalEnabled: p.portalEnabled,
+                  portalToken: p.portalToken,
+                  viewCount: p.viewCount,
+                  hasAccount: Boolean(p.userId),
+                }))}
+              />
             </CardBody>
           </Card>
 

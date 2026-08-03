@@ -12,6 +12,9 @@ import {
   decideApproval,
 } from "@/server/domain/shipments";
 import { ingestEmail } from "@/server/integrations/ingest";
+import { enablePortal, revokePortal } from "@/server/domain/portal";
+import { requestReview } from "@/server/domain/relay";
+import { sweepFollowUps } from "@/server/domain/followups";
 import { orgInboundAddress } from "@/server/integrations/routing";
 import { prisma } from "@/server/db";
 import "@/server/queue/handlers";
@@ -274,6 +277,95 @@ export async function createBuyerLinkAction(
 
     revalidatePath(`/app/shipments/${shipmentId}`);
     return { ok: true, message: `/s/${link.token}` };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+
+/** Hand a counterparty a scoped link into this shipment. */
+export async function enablePortalAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const session = await requireSession();
+    const partyId = String(formData.get("partyId") ?? "");
+    const shipmentId = String(formData.get("shipmentId") ?? "");
+    if (!partyId) return { error: "Missing party" };
+
+    const party = await enablePortal({
+      orgId: session.orgId,
+      partyId,
+      actor: actorFrom(session),
+    });
+
+    revalidatePath(`/app/shipments/${shipmentId}`);
+    return { ok: true, message: `/p/${party.portalToken}` };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function revokePortalAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const session = await requireSession();
+    const partyId = String(formData.get("partyId") ?? "");
+    const shipmentId = String(formData.get("shipmentId") ?? "");
+    await revokePortal({ orgId: session.orgId, partyId });
+    revalidatePath(`/app/shipments/${shipmentId}`);
+    return { ok: true, message: "Access revoked" };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/**
+ * Ask a party to review a document. Refuses if that party is not entitled to
+ * see it — the visibility rules are enforced, not advisory.
+ */
+export async function requestReviewAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const session = await requireSession();
+    const shipmentId = String(formData.get("shipmentId") ?? "");
+    const documentId = String(formData.get("documentId") ?? "");
+    const partyId = String(formData.get("partyId") ?? "");
+    if (!documentId || !partyId) return { error: "Choose a document and a party" };
+
+    const { draft } = await requestReview({
+      orgId: session.orgId,
+      shipmentId,
+      documentId,
+      partyId,
+      actor: actorFrom(session),
+    });
+
+    revalidatePath(`/app/shipments/${shipmentId}`);
+    return { ok: true, message: `Review requested — a covering message is drafted for ${draft.partyName}` };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/** Run the follow-up sweep now (the scheduler does this automatically). */
+export async function runFollowUpSweepAction(
+  _prev: ActionState,
+  _formData: FormData,
+): Promise<ActionState> {
+  try {
+    await requireSession();
+    const result = await sweepFollowUps();
+    revalidatePath("/app");
+    return {
+      ok: true,
+      message: `Swept ${result.considered} pending request(s): ${result.sent} chased, ${result.drafted} drafted, ${result.skipped} skipped`,
+    };
   } catch (err) {
     return fail(err);
   }

@@ -167,6 +167,20 @@ export const eventSchemas = {
     evidenceMessageId: z.string().nullish(),
   }),
 
+  "followup.sent": z.object({
+    approvalId: z.string(),
+    messageId: z.string(),
+    reminderNumber: z.number().int(),
+    daysWaiting: z.number().int(),
+    autoSent: z.boolean(),
+  }),
+
+  "document.shared": z.object({
+    documentId: z.string(),
+    audience: z.array(z.string()),
+    changedBy: z.string().optional(),
+  }),
+
   "buyer_link.created": z.object({
     buyerLinkId: z.string(),
     label: z.string(),
@@ -250,6 +264,12 @@ export function describeEvent(type: string, payload: Record<string, unknown>): s
       return `Approval requested: ${p.subject}`;
     case "approval.decided":
       return `Approval ${String(p.state ?? "").toLowerCase()}: ${p.approvalId}`;
+    case "followup.sent":
+      return `Follow-up #${p.reminderNumber} sent after ${p.daysWaiting} day(s)${
+        p.autoSent ? " (automatic)" : " (drafted for review)"
+      }`;
+    case "document.shared":
+      return `Document access changed — now shared with ${(p.audience ?? []).join(", ") || "no one"}`;
     case "buyer_link.created":
       return `Buyer link created (${p.label})`;
     case "buyer_link.viewed":

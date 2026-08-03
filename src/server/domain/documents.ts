@@ -6,11 +6,13 @@ import { ocr } from "../ocr";
 import { queue } from "../queue";
 import { documentKey, storage } from "../storage";
 import { tenantDb } from "../tenant";
+import type { DocumentType, PartyType } from "@prisma/client";
 import { AI_ACTOR, type Actor } from "./events";
+import { defaultVisibility } from "./visibility";
 import { appendEvent } from "./ledger";
 import { createTask, updateTradeFields } from "./shipments";
 
-type DocType = "COMMERCIAL_INVOICE" | "PACKING_LIST" | "PURCHASE_ORDER" | "BILL_OF_LADING" | "OTHER";
+type DocType = DocumentType;
 
 /** Documents in the same family are versions of one logical document. */
 function familyFor(type: DocType, name: string) {
@@ -25,6 +27,10 @@ export async function uploadDocument(args: {
   buffer: Buffer;
   type?: DocType;
   actor: Actor;
+  /** The counterparty that produced this document, when not the exporter. */
+  issuedByPartyId?: string | null;
+  /** Override the type's default audience. Omit to use the policy default. */
+  visibleTo?: PartyType[];
 }) {
   const db = tenantDb(args.orgId);
   const type = args.type ?? "OTHER";
@@ -40,6 +46,11 @@ export async function uploadDocument(args: {
   const key = documentKey(args.orgId, args.shipmentId, args.fileName);
   await storage().put(key, args.buffer, args.mimeType);
 
+  // WHO MAY SEE IT is decided here, from the document type, unless the caller
+  // is explicit. Failing to the type's default is what keeps a CHA checklist
+  // away from the buyer without anyone having to remember.
+  const visibleTo = args.visibleTo ?? defaultVisibility(type);
+
   const doc = await db.document.create({
     data: {
       orgId: args.orgId,
@@ -52,7 +63,17 @@ export async function uploadDocument(args: {
       mimeType: args.mimeType,
       sizeBytes: args.buffer.byteLength,
       extractionStatus: "PENDING",
+      visibleTo,
+      issuedByPartyId: args.issuedByPartyId ?? null,
     },
+  });
+
+  await appendEvent({
+    orgId: args.orgId,
+    shipmentId: args.shipmentId,
+    type: "document.shared",
+    payload: { documentId: doc.id, audience: visibleTo },
+    actor: args.actor,
   });
 
   await appendEvent({
@@ -121,13 +142,17 @@ export async function extractDocument(args: {
       .filter(([, f]) => f.confidence < env.EXTRACTION_REVIEW_THRESHOLD)
       .map(([name]) => name);
 
+    const resolvedType = doc.type === "OTHER" ? data.documentType : doc.type;
     await db.document.update({
       where: { id: doc.id },
       data: {
-        type: doc.type === "OTHER" ? data.documentType : doc.type,
+        type: resolvedType,
         extractedData: data as never,
         confidence: data.overallConfidence,
         extractionStatus: "NEEDS_REVIEW",
+        // Reclassification changes who may see it — e.g. an unlabelled upload
+        // recognised as a CHECKLIST must immediately stop being buyer-visible.
+        ...(resolvedType !== doc.type ? { visibleTo: defaultVisibility(resolvedType) } : {}),
       },
     });
 

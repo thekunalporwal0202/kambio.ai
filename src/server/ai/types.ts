@@ -25,7 +25,14 @@ export const documentTypes = [
   "COMMERCIAL_INVOICE",
   "PACKING_LIST",
   "PURCHASE_ORDER",
+  "CHECKLIST",
+  "SHIPPING_BILL",
+  "FUMIGATION_CERT",
+  "PHYTOSANITARY_CERT",
+  "CERTIFICATE_OF_ORIGIN",
+  "BL_DRAFT",
   "BILL_OF_LADING",
+  "FINAL_DOC_SET",
   "OTHER",
 ] as const;
 
@@ -93,12 +100,28 @@ export type ClassifyMessageInput = {
   shipmentContext?: string;
 };
 
+/** What the drafted message is for. Changes tone, content and guardrails. */
+export type DraftPurpose =
+  /** Answer the counterparty who just wrote in. */
+  | "reply"
+  /** Pass a buyer's response on to the CHA or forwarder (the relay). */
+  | "relay"
+  /** Chase a party who has not responded. */
+  | "followup";
+
 export type DraftReplyInput = {
   incomingText: string;
   channel: "EMAIL" | "WHATSAPP" | "APP";
   intent: string;
   shipmentContext: string;
   exporterName: string;
+  purpose?: DraftPurpose;
+  /** Who the drafted message is addressed to. */
+  audience?: { partyType: string; name: string };
+  /** Documents the recipient is entitled to see — never list anything else. */
+  visibleDocuments?: string[];
+  /** For follow-ups: what we are waiting on and for how long. */
+  awaiting?: { subject: string; daysWaiting: number };
 };
 
 /**

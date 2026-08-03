@@ -12,7 +12,7 @@ Rules:
 - Confidence reflects how certain you are the value is correct AND correctly labelled. Ambiguous or inferred values must score below 0.85.
 - Amounts are numbers without currency symbols or thousands separators. Dates are ISO-8601 (YYYY-MM-DD).
 
-Field names to use when present: poNumber, invoiceNumber, incoterm, currency, totalValue, buyerName, sellerName, originPort, destPort, originCountry, destCountry, etd, eta, carrierRef, paymentTerms, grossWeightKg, netWeightKg, packageCount.`;
+Document types: CHECKLIST is the CHA's statement of how a shipping bill will be filed. SHIPPING_BILL is the filed customs document. BL_DRAFT is a draft bill of lading from a forwarder or carrier.\n\nField names to use when present: poNumber, invoiceNumber, incoterm, currency, totalValue, buyerName, sellerName, originPort, destPort, originCountry, destCountry, etd, eta, carrierRef, paymentTerms, grossWeightKg, netWeightKg, packageCount.`;
 
 export const CLASSIFY_SYSTEM = `You interpret messages between an exporter and their counterparties (buyer, customs broker, freight forwarder).
 
@@ -29,14 +29,30 @@ Rules:
 - "proposedAction" describes, in one plain sentence, the workspace change a human should confirm. It is a PROPOSAL only — never phrase it as done.
 - Score below 0.85 when the message is ambiguous or mixes intents.`;
 
-export const DRAFT_SYSTEM = `You draft replies an exporter will review before sending.
+export const DRAFT_SYSTEM = `You draft messages an exporter will review before sending.
 
 Rules:
 - Write as the exporter's operations team: professional, concise, specific.
 - Never promise a price, a payment, a delivery date, or an approval that is not already stated in the provided shipment context.
 - If information is missing, ask for it rather than inventing it.
 - No greetings longer than one line. No marketing language.
-- For WhatsApp, keep it under 60 words and use no formatting.`;
+- For WhatsApp, keep it under 60 words and use no formatting.
+
+CONFIDENTIALITY — this is the most important rule:
+- You may reference ONLY the documents listed as visible to the recipient.
+- Never mention, quote, name or hint at any other document, and never reveal
+  what another party said unless it is operationally necessary for this
+  recipient to act. Relaying a buyer's requested change is necessary; naming an
+  internal customs document to the buyer is not.
+
+Purpose-specific guidance:
+- "reply": answer the person who wrote in.
+- "relay": you are passing one party's response on to another party so they can
+  act. Lead with the action required. State the requested changes precisely and
+  neutrally. Do not editorialise, and do not include the original message
+  verbatim unless quoting a specific change.
+- "followup": a short chase. One paragraph, polite, no new commitments, and
+  state plainly what you are waiting for and since when.`;
 
 export function extractionUserPrompt(fileName: string, text: string, hintedType?: string) {
   return [
@@ -78,11 +94,25 @@ export function draftUserPrompt(input: {
   incomingText: string;
   shipmentContext: string;
   exporterName: string;
+  purpose?: string;
+  audience?: { partyType: string; name: string } | undefined;
+  visibleDocuments?: string[] | undefined;
+  awaiting?: { subject: string; daysWaiting: number } | undefined;
 }) {
   return [
     `You are drafting on behalf of: ${input.exporterName}`,
+    `Purpose: ${input.purpose ?? "reply"}`,
+    input.audience
+      ? `Recipient: ${input.audience.name} (${input.audience.partyType})`
+      : null,
     `Channel: ${input.channel}`,
     `Detected intent of the incoming message: ${input.intent}`,
+    input.awaiting
+      ? `Awaiting: "${input.awaiting.subject}" for ${input.awaiting.daysWaiting} day(s)`
+      : null,
+    "",
+    "Documents this recipient may see (mention NO others):",
+    input.visibleDocuments?.length ? input.visibleDocuments.map((d) => `- ${d}`).join("\n") : "- (none)",
     "",
     `Shipment context (the ONLY facts you may assert):`,
     input.shipmentContext,
@@ -91,7 +121,9 @@ export function draftUserPrompt(input: {
     "---",
     input.incomingText.slice(0, 20_000),
     "---",
-  ].join("\n");
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
 }
 
 /** JSON Schemas shared by providers that support structured output. */
@@ -100,7 +132,20 @@ export const EXTRACTION_SCHEMA = {
   properties: {
     documentType: {
       type: "string",
-      enum: ["COMMERCIAL_INVOICE", "PACKING_LIST", "PURCHASE_ORDER", "BILL_OF_LADING", "OTHER"],
+      enum: [
+        "COMMERCIAL_INVOICE",
+        "PACKING_LIST",
+        "PURCHASE_ORDER",
+        "CHECKLIST",
+        "SHIPPING_BILL",
+        "FUMIGATION_CERT",
+        "PHYTOSANITARY_CERT",
+        "CERTIFICATE_OF_ORIGIN",
+        "BL_DRAFT",
+        "BILL_OF_LADING",
+        "FINAL_DOC_SET",
+        "OTHER",
+      ],
     },
     fields: {
       type: "object",

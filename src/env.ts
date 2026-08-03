@@ -47,9 +47,23 @@ const schema = z.object({
   INBOUND_EMAIL_DOMAIN: z.string().default("parse.kambio.app"),
   // Shared secret checked on the inbound webhook. Empty = accept (dev only).
   INBOUND_WEBHOOK_SECRET: z.string().default(""),
-  EMAIL_PROVIDER: z.enum(["mock", "postmark", "sendgrid"]).default("mock"),
+  EMAIL_PROVIDER: z.enum(["mock", "resend", "postmark", "sendgrid"]).default("mock"),
   EMAIL_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("ops@kambio.app"),
+  /** Resend API key. Takes precedence over EMAIL_API_KEY when set. */
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default("Kambio Ops <ops@kambio.app>"),
+
+  // --- Follow-up automation ----------------------------------------------
+  /** Hours of silence before the first automatic chase. */
+  FOLLOWUP_AFTER_HOURS: z.coerce.number().min(1).default(24),
+  /** Hours between subsequent chases. */
+  FOLLOWUP_INTERVAL_HOURS: z.coerce.number().min(1).default(24),
+  /** Never send more than this many chases for one request. */
+  FOLLOWUP_MAX: z.coerce.number().min(0).default(3),
+  /** Chasers are the ONLY messages that may send without a human. */
+  FOLLOWUP_AUTO_SEND: z.coerce.boolean().default(true),
+  /** Protects POST /api/cron/followups. Empty = open (dev only). */
+  CRON_SECRET: z.string().default(""),
 
   // --- WhatsApp Business API ---------------------------------------------
   WHATSAPP_PROVIDER: z.enum(["mock", "meta"]).default("mock"),

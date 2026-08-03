@@ -11,6 +11,10 @@ export const jobSchemas = {
     shipmentId: z.string(),
     documentId: z.string(),
   }),
+  "followups.sweep": z.object({
+    /** Present only so the payload is never empty. */
+    triggeredBy: z.string().default("schedule"),
+  }),
   "message.interpret": z.object({
     orgId: z.string(),
     shipmentId: z.string(),

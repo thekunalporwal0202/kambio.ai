@@ -1,5 +1,6 @@
 import "server-only";
 import { extractDocument } from "../domain/documents";
+import { sweepFollowUps } from "../domain/followups";
 import { interpretMessage } from "../domain/messages";
 import { registerHandler } from "./index";
 
@@ -22,6 +23,11 @@ export function registerJobHandlers() {
 
   registerHandler("message.interpret", async (data) => {
     await interpretMessage(data);
+  });
+
+  registerHandler("followups.sweep", async () => {
+    const result = await sweepFollowUps();
+    if (result.considered > 0) console.info("[followups]", result);
   });
 }
 

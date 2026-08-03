@@ -24,12 +24,12 @@ datasource db {
 // ---------------------------------------------------------------- tenancy ---
 
 model Org {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
   // Inbound address prefix: po+<inboundKey>@parse.kambio.app
-  inboundKey String  @unique
-  createdAt DateTime @default(now())
+  inboundKey String   @unique
+  createdAt  DateTime @default(now())
 
   users     User[]
   shipments Shipment[]
@@ -39,6 +39,9 @@ enum UserRole {
   OWNER
   OPS
   VIEWER
+  /// A counterparty (CHA / forwarder / buyer) who logs in instead of using a
+  /// guest link. Scoped to the shipments their Party rows belong to.
+  PARTNER
 }
 
 model User {
@@ -80,7 +83,7 @@ model Shipment {
   invoiceNumber String?
   incoterm      String?
   currency      String?
-  totalValue    Decimal? @db.Decimal(14, 2)
+  totalValue    Decimal?  @db.Decimal(14, 2)
   originPort    String?
   destPort      String?
   originCountry String?
@@ -97,7 +100,7 @@ model Shipment {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  org        Org         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  org        Org           @relation(fields: [orgId], references: [id], onDelete: Cascade)
   parties    Party[]
   documents  Document[]
   messages   Message[]
@@ -106,6 +109,7 @@ model Shipment {
   events     Event[]
   buyerLinks BuyerLink[]
   aiCalls    AiCall[]
+  threads    EmailThread[]
 
   @@unique([orgId, reference])
   @@index([orgId, status])
@@ -135,20 +139,66 @@ model Party {
   email      String?
   phone      String? // E.164, used to match inbound WhatsApp
   channel    PartyChannel @default(EMAIL)
-  createdAt  DateTime     @default(now())
 
-  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  /// Zero-install access: a scoped link at /p/<portalToken>. The shipper
+  /// decides per party whether to hand out a link, invite a real account, or
+  /// neither (pure email relay).
+  portalToken    String? @unique
+  portalEnabled  Boolean @default(false)
+  canUpload      Boolean @default(false)
+  /// Set when this counterparty graduated from a guest link to a real login.
+  userId         String?
+  /// Address-book entry this party was instantiated from.
+  counterpartyId String?
+
+  lastViewedAt DateTime?
+  viewCount    Int       @default(0)
+
+  createdAt DateTime @default(now())
+
+  shipment  Shipment      @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  approvals Approval[]
+  documents Document[]
+  threads   EmailThread[]
 
   @@index([orgId, shipmentId])
   @@index([email])
   @@index([phone])
+  @@index([userId])
+}
+
+/// Org-level address book. The CHA is usually constant (isDefault), while the
+/// forwarder/shipping line is chosen per shipment.
+model Counterparty {
+  id         String    @id @default(cuid())
+  orgId      String
+  type       PartyType
+  name       String
+  email      String?
+  phone      String?
+  /// Auto-attach to every new shipment (used for the standing CHA).
+  isDefault  Boolean   @default(false)
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([orgId, type])
 }
 
 enum DocumentType {
   COMMERCIAL_INVOICE
   PACKING_LIST
   PURCHASE_ORDER
+  /// CHA's statement of how the shipping bill will be filed. Exporter <-> CHA
+  /// only — the buyer must never see this.
+  CHECKLIST
+  SHIPPING_BILL
+  FUMIGATION_CERT
+  PHYTOSANITARY_CERT
+  CERTIFICATE_OF_ORIGIN
+  BL_DRAFT
   BILL_OF_LADING
+  /// The merged final set handed to the buyer.
+  FINAL_DOC_SET
   OTHER
 }
 
@@ -170,9 +220,15 @@ model Document {
   // Documents with the same `family` are versions of one logical doc.
   family     String
 
-  fileRef  String // storage key
-  mimeType String
+  fileRef   String // storage key
+  mimeType  String
   sizeBytes Int    @default(0)
+
+  /// WHO MAY SEE THIS DOCUMENT. Defaults come from the document type (see
+  /// src/server/domain/visibility.ts) and are enforced on every read.
+  visibleTo       PartyType[]
+  /// The party that produced it (CHA, forwarder, exporter...).
+  issuedByPartyId String?
 
   extractionStatus ExtractionStatus @default(PENDING)
   // ExtractionResult (see src/server/ai/types.ts): per-field value + confidence + source snippet
@@ -183,7 +239,9 @@ model Document {
 
   uploadedAt DateTime @default(now())
 
-  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipment  Shipment   @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  issuedBy  Party?     @relation(fields: [issuedByPartyId], references: [id], onDelete: SetNull)
+  approvals Approval[]
 
   @@unique([shipmentId, family, version])
   @@index([orgId, shipmentId])
@@ -220,15 +278,19 @@ model Message {
   fromAddress String?
   toAddress   String?
   subject     String?
-  rawText     String           @db.Text
+  rawText     String  @db.Text
   externalId  String? // provider message id — used for idempotent ingestion
+
+  threadId          String?
+  providerMessageId String?
+  inReplyTo         String?
 
   parsedIntent     MessageIntent @default(UNKNOWN)
   // Structured interpretation, e.g. { approvedDocument: "invoice-v3", changes: [...] }
   parsedPayload    Json?
   intentConfidence Float?
   // Verbatim quote from rawText that justifies the interpretation.
-  sourceSnippet    String?      @db.Text
+  sourceSnippet    String?       @db.Text
 
   createdAt DateTime @default(now())
 
@@ -276,6 +338,8 @@ enum ApprovalState {
   REJECTED
 }
 
+/// A review round: "party X, please approve document Y".
+/// Drives both the relay loop and the automated follow-ups.
 model Approval {
   id         String        @id @default(cuid())
   orgId      String
@@ -283,14 +347,71 @@ model Approval {
   subject    String // e.g. "Commercial Invoice v3"
   subjectRef String? // e.g. "document:<id>"
   state      ApprovalState @default(REQUESTED)
+
+  /// Who we are waiting on.
+  partyId          String?
+  documentId       String?
+  /// 1 for the first draft, 2 after the first revision, ...
+  round            Int     @default(1)
+  /// Free text the reviewer sent back when asking for changes.
+  changesRequested String? @db.Text
+
   // The inbound message that evidences the decision — provenance for approvals.
   evidenceMessageId String?
-  decidedAt  DateTime?
-  createdAt  DateTime      @default(now())
 
-  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  /// Follow-up automation. `dueAt` is when a chaser becomes appropriate.
+  dueAt          DateTime?
+  reminderCount  Int       @default(0)
+  lastRemindedAt DateTime?
+
+  decidedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  shipment Shipment  @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  party    Party?    @relation(fields: [partyId], references: [id], onDelete: SetNull)
+  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
 
   @@index([orgId, shipmentId])
+  @@index([state, dueAt])
+}
+
+/// One email chain per (shipment, party) — a shipment has exactly one buyer
+/// thread, so replies stay in a single conversation the buyer recognises.
+model EmailThread {
+  id         String @id @default(cuid())
+  orgId      String
+  shipmentId String
+  partyId    String
+
+  subject               String
+  /// Provider Message-ID of the most recent message, used as In-Reply-To.
+  lastProviderMessageId String?
+  /// Accumulated References header, oldest first.
+  referenceIds          String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  party    Party    @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@unique([shipmentId, partyId])
+  @@index([orgId])
+}
+
+/// Marketing contact / demo requests.
+model Lead {
+  id        String   @id @default(cuid())
+  kind      String // "contact" | "demo"
+  name      String
+  email     String
+  company   String?
+  role      String?
+  volume    String?
+  message   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // ------------------------------------------------------- the event ledger ---
@@ -327,17 +448,17 @@ model Event {
 // ------------------------------------------------- buyer view / analytics ---
 
 model BuyerLink {
-  id         String    @id @default(cuid())
-  orgId      String
-  shipmentId String
-  token      String    @unique
-  label      String
+  id              String    @id @default(cuid())
+  orgId           String
+  shipmentId      String
+  token           String    @unique
+  label           String
   // Set when the counterparty "graduates" to a real login.
   claimedByUserId String?
-  viewCount  Int       @default(0)
-  lastViewedAt DateTime?
-  revokedAt  DateTime?
-  createdAt  DateTime  @default(now())
+  viewCount       Int       @default(0)
+  lastViewedAt    DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
 
   shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
@@ -346,19 +467,19 @@ model BuyerLink {
 
 /// One row per LLM/OCR call — powers per-shipment cost attribution.
 model AiCall {
-  id         String   @id @default(cuid())
-  orgId      String
-  shipmentId String?
-  task       String // "extract_document" | "classify_message" | "draft_reply"
-  provider   String // "mock" | "anthropic" | "openai"
-  model      String
-  inputTokens  Int    @default(0)
-  outputTokens Int    @default(0)
-  costUsd    Decimal  @default(0) @db.Decimal(12, 6)
-  latencyMs  Int      @default(0)
-  ok         Boolean  @default(true)
-  error      String?
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  orgId        String
+  shipmentId   String?
+  task         String // "extract_document" | "classify_message" | "draft_reply"
+  provider     String // "mock" | "anthropic" | "openai"
+  model        String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  costUsd      Decimal  @default(0) @db.Decimal(12, 6)
+  latencyMs    Int      @default(0)
+  ok           Boolean  @default(true)
+  error        String?
+  createdAt    DateTime @default(now())
 
   shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 

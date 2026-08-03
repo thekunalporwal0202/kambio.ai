@@ -254,19 +254,69 @@ export async function sendDraftedReply(args: {
 
   const body = args.body ?? draft.rawText;
 
+  // Resolve the single chain for this shipment+party so the counterparty sees
+  // one conversation rather than a new thread per document.
+  let threading: {
+    threadId?: string;
+    subject?: string;
+    inReplyTo?: string;
+    references?: string[];
+    replyTo?: string;
+  } = {};
+
+  const partyId = typeof payload.partyId === "string" ? payload.partyId : null;
+  if (draft.channel === "EMAIL") {
+    const resolvedPartyId =
+      partyId ??
+      (
+        await db.party.findFirst({
+          where: { shipmentId: draft.shipmentId, email: draft.toAddress ?? undefined },
+          select: { id: true },
+        })
+      )?.id ??
+      null;
+
+    if (resolvedPartyId) {
+      const { threadHeadersFor } = await import("../integrations/threads");
+      threading = await threadHeadersFor({
+        orgId: args.orgId,
+        shipmentId: draft.shipmentId,
+        partyId: resolvedPartyId,
+        fallbackSubject: draft.subject ?? "",
+      });
+    }
+  }
+
   const { deliver } = await import("../integrations/outbound");
   const delivery = await deliver({
     channel: draft.channel,
     to: draft.toAddress,
-    subject: draft.subject,
+    // The thread subject wins: a stable subject is what keeps the chain intact.
+    subject: threading.subject ?? draft.subject,
     body,
+    inReplyTo: threading.inReplyTo,
+    references: threading.references,
+    replyTo: threading.replyTo,
   });
+
+  if (threading.threadId) {
+    const { recordSentMessage } = await import("../integrations/threads");
+    await recordSentMessage({
+      orgId: args.orgId,
+      threadId: threading.threadId,
+      providerMessageId: delivery.externalId,
+    });
+  }
 
   await db.message.update({
     where: { id: draft.id },
     data: {
       rawText: body,
+      subject: threading.subject ?? draft.subject,
       externalId: delivery.externalId,
+      providerMessageId: delivery.externalId,
+      inReplyTo: threading.inReplyTo ?? null,
+      threadId: threading.threadId ?? null,
       parsedPayload: { ...payload, draft: false, sentAt: new Date().toISOString() } as never,
     },
   });

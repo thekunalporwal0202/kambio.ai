@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, CircleDot, Clock, Inbox } from "lucide-react";
+import { AlertTriangle, ArrowRight, CircleDot, Clock, Hourglass, Inbox } from "lucide-react";
 import { requireSession } from "@/server/auth";
 import { tenantDb } from "@/server/tenant";
 import { prisma } from "@/server/db";
 import { orgInboundAddress } from "@/server/integrations/routing";
 import { Badge, Card, CardBody, CardHeader, CardTitle, EmptyState, StatusPill } from "@/components/ui";
 import { PasteEmail } from "@/components/paste-email";
+import { FollowUpSweep } from "@/components/relay";
+import { PARTY_LABEL } from "@/server/domain/visibility";
 import { relativeTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +36,15 @@ export default async function CommandCenter() {
         _count: { select: { tasks: { where: { status: "OPEN" } }, documents: true } },
       },
     }),
-    db.approval.count({ where: { state: "REQUESTED" } }),
+    db.approval.findMany({
+      where: { state: "REQUESTED", partyId: { not: null } },
+      orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
+      take: 12,
+      include: {
+        party: { select: { name: true, type: true } },
+        shipment: { select: { id: true, reference: true } },
+      },
+    }),
     db.message.count({ where: { direction: "OUTBOUND", parsedPayload: { path: ["draft"], equals: true } } }),
   ]);
 
@@ -48,8 +58,9 @@ export default async function CommandCenter() {
           <h1 className="text-2xl font-semibold tracking-tight">What needs you today</h1>
           <p className="mt-1 text-sm text-muted">
             {blockers.length} blocker{blockers.length === 1 ? "" : "s"} · {warnings.length} to
-            review · {awaitingApproval} approval{awaitingApproval === 1 ? "" : "s"} pending ·{" "}
-            {drafts} draft repl{drafts === 1 ? "y" : "ies"} waiting
+            review · 
+            {awaitingApproval.length} waiting on others · {drafts} draft repl
+            {drafts === 1 ? "y" : "ies"} to send
           </p>
         </div>
       </div>
@@ -98,6 +109,60 @@ export default async function CommandCenter() {
                   </Link>
                 </li>
               ))}
+            </ul>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* ------------------------------------------- waiting on others --- */}
+      <Card>
+        <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle className="flex items-center gap-2">
+            <Hourglass className="h-4 w-4" />
+            Waiting on others
+          </CardTitle>
+          <FollowUpSweep />
+        </CardHeader>
+        <CardBody className="p-0">
+          {awaitingApproval.length === 0 ? (
+            <div className="p-4">
+              <EmptyState
+                title="Nobody owes you a reply"
+                hint="Requests you send to a buyer, CHA or forwarder are tracked here, and chased automatically if they go quiet."
+                icon={<Hourglass className="h-5 w-5" />}
+              />
+            </div>
+          ) : (
+            <ul className="divide-y divide-line">
+              {awaitingApproval.map((a) => {
+                const overdue = a.dueAt !== null && a.dueAt.getTime() < Date.now();
+                return (
+                  <li key={a.id}>
+                    <Link
+                      href={`/app/shipments/${a.shipmentId}`}
+                      className="flex items-start gap-3 px-4 py-3 transition hover:bg-panel-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{a.subject}</p>
+                        <p className="mt-0.5 text-xs text-muted">
+                          {a.party?.name}
+                          {a.party ? ` · ${PARTY_LABEL[a.party.type]}` : ""} ·{" "}
+                          {a.shipment.reference}
+                          {a.round > 1 ? ` · round ${a.round}` : ""}
+                        </p>
+                      </div>
+                      {a.reminderCount > 0 ? (
+                        <Badge>
+                          {a.reminderCount} chase{a.reminderCount === 1 ? "" : "s"} sent
+                        </Badge>
+                      ) : null}
+                      <Badge tone={overdue ? "warn" : undefined}>
+                        {overdue ? "overdue" : `asked ${relativeTime(a.createdAt)}`}
+                      </Badge>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </CardBody>

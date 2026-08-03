@@ -177,6 +177,64 @@ export class MockProvider implements AiProvider {
   async draftReply(input: DraftReplyInput): Promise<AiResult<DraftReply>> {
     const started = Date.now();
     const whatsapp = input.channel === "WHATSAPP";
+    const purpose = input.purpose ?? "reply";
+    const to = input.audience?.name ?? "there";
+
+    // --- relay: hand one party's response to another so they can act -------
+    if (purpose === "relay") {
+      const body = [
+        `Hello ${to},`,
+        "",
+        `The buyer has come back on this shipment. Their response:`,
+        "",
+        input.incomingText.trim().slice(0, 1200),
+        "",
+        `Please action the above and send the revised document for review.`,
+        "",
+        `Shipment reference:`,
+        input.shipmentContext.split("\n")[0] ?? "",
+        "",
+        `Best regards,`,
+        input.exporterName,
+      ].join("\n");
+
+      return {
+        data: {
+          subject: `Revision required — ${input.shipmentContext.split("\n")[0]?.replace("Reference: ", "") ?? "shipment"}`,
+          body,
+          confidence: 0.82,
+          rationale: `Relays the buyer's response to the ${input.audience?.partyType ?? "counterparty"} without disclosing documents outside their access.`,
+        },
+        usage: usage(this.name, "mock-rules-v1", input.incomingText.length, started),
+      };
+    }
+
+    // --- followup: a short, commitment-free chase --------------------------
+    if (purpose === "followup") {
+      const days = input.awaiting?.daysWaiting ?? 1;
+      const subject = input.awaiting?.subject ?? "the pending document";
+      const body = whatsapp
+        ? `Hi ${to}, following up on ${subject} — sent ${days} day${days === 1 ? "" : "s"} ago. Could you confirm or send your comments?`
+        : [
+            `Hello ${to},`,
+            "",
+            `Following up on ${subject}, which we sent ${days} day${days === 1 ? "" : "s"} ago.`,
+            `Could you confirm your approval, or send any changes you would like made?`,
+            "",
+            `Best regards,`,
+            input.exporterName,
+          ].join("\n");
+
+      return {
+        data: {
+          subject: whatsapp ? null : `Following up — ${subject}`,
+          body,
+          confidence: 0.86,
+          rationale: `Automated chase after ${days} day(s); makes no new commitments.`,
+        },
+        usage: usage(this.name, "mock-rules-v1", subject.length, started),
+      };
+    }
 
     const bodies: Record<string, string> = {
       APPROVAL: `Thank you for the confirmation. We have recorded your approval and are proceeding with document preparation. We will share the final set once ready.`,
@@ -243,6 +301,12 @@ function detectType(
   if (hinted) return hinted;
   const hay = `${fileName} ${text}`.toLowerCase();
   if (/packing\s*list/.test(hay)) return "PACKING_LIST";
+  if (/check\s*list|checklist/.test(hay)) return "CHECKLIST";
+  if (/shipping\s*bill|sb\s*no/.test(hay)) return "SHIPPING_BILL";
+  if (/fumigation/.test(hay)) return "FUMIGATION_CERT";
+  if (/phytosanitary|phyto/.test(hay)) return "PHYTOSANITARY_CERT";
+  if (/certificate\s*of\s*origin|\bcoo\b/.test(hay)) return "CERTIFICATE_OF_ORIGIN";
+  if (/(draft|proforma)\s*(bill\s*of\s*lading|b\/?l)|b\/?l\s*draft/.test(hay)) return "BL_DRAFT";
   if (/bill\s*of\s*lading|b\/l\b/.test(hay)) return "BILL_OF_LADING";
   if (/commercial\s*invoice|\binvoice\b/.test(hay)) return "COMMERCIAL_INVOICE";
   if (/purchase\s*order|\bp\.?o\.?\b/.test(hay)) return "PURCHASE_ORDER";

@@ -16,7 +16,7 @@ export type SessionUser = {
   orgId: string;
   email: string;
   name: string;
-  role: "OWNER" | "OPS" | "VIEWER";
+  role: "OWNER" | "OPS" | "VIEWER" | "PARTNER";
   orgName: string;
 };
 

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { CheckCircle2, Circle, Package } from "lucide-react";
 import { prisma } from "@/server/db";
 import { appendEvent } from "@/server/domain/ledger";
+import { DOCUMENT_LABEL, visibilityWhere } from "@/server/domain/visibility";
 import { Badge, Card, CardBody, CardHeader, CardTitle, Field, StatusPill } from "@/components/ui";
 import { STATUS_LABEL, STATUS_ORDER, formatDate, formatMoney } from "@/lib/utils";
 
@@ -22,7 +23,10 @@ export default async function BuyerView({ params }: { params: Promise<{ token: s
       shipment: {
         include: {
           documents: {
-            where: { extractionStatus: "CONFIRMED" },
+            // The buyer is an IMPORTER and sees only what an importer may see.
+            // A shipping bill or a CHA checklist never reaches this page, no
+            // matter how many times it has been confirmed.
+            where: { extractionStatus: "CONFIRMED", ...visibilityWhere("IMPORTER") },
             orderBy: { uploadedAt: "desc" },
             select: { id: true, name: true, type: true, version: true, uploadedAt: true },
           },
@@ -122,7 +126,7 @@ export default async function BuyerView({ params }: { params: Promise<{ token: s
             <ul className="space-y-2">
               {shipment.documents.map((d) => (
                 <li key={d.id} className="flex items-center justify-between text-sm">
-                  <span>{d.name}</span>
+                  <span>{DOCUMENT_LABEL[d.type]}</span>
                   <span className="text-xs text-muted">
                     v{d.version} · {formatDate(d.uploadedAt)}
                   </span>
