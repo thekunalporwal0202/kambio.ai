@@ -1,0 +1,75 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kambio
+    ports:
+      - "5432:5432"
+    volumes:
+      - kambio-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kambio"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      target: runner
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/kambio
+      REDIS_URL: redis://redis:6379
+      QUEUE_DRIVER: redis
+      AI_PROVIDER: mock
+      STORAGE_DRIVER: local
+      STORAGE_LOCAL_DIR: /data/storage
+      AUTH_SECRET: kambio-dev-secret-change-me-in-prod
+      APP_URL: http://localhost:3000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    volumes:
+      - kambio-files:/data/storage
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    # Migrate + seed on boot so `docker compose up` is genuinely one command.
+    command: sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts && npx next start"
+
+  worker:
+    build:
+      context: .
+      target: runner
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/kambio
+      REDIS_URL: redis://redis:6379
+      QUEUE_DRIVER: redis
+      AI_PROVIDER: mock
+      STORAGE_DRIVER: local
+      STORAGE_LOCAL_DIR: /data/storage
+      AUTH_SECRET: kambio-dev-secret-change-me-in-prod
+      NODE_ENV: production
+    volumes:
+      # The worker reads the documents the web process wrote.
+      - kambio-files:/data/storage
+    depends_on:
+      web: { condition: service_started }
+      redis: { condition: service_healthy }
+    command: sh -c "npx tsx worker/index.ts"
+
+volumes:
+  kambio-db:
+  kambio-files:

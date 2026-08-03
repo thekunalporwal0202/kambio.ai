@@ -24,3 +24,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# kambio
+/.storage
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache

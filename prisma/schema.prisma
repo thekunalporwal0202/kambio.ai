@@ -1,0 +1,367 @@
+// Kambio data model.
+//
+// ARCHITECTURE NOTE — event sourcing:
+//   `Event` is the append-only ledger and the SOURCE OF TRUTH for a shipment.
+//   Every other shipment-scoped table (Shipment, Document, Task, Approval, ...)
+//   is a READ MODEL / projection derived from those events, kept up to date in
+//   the same transaction that appends the event (see src/server/domain/ledger.ts).
+//   Any projection can be rebuilt from scratch via rebuildShipment().
+//
+// TENANCY NOTE:
+//   Every tenant-scoped model carries `orgId`. Isolation is enforced at the
+//   query layer by a Prisma client extension (src/server/tenant.ts), not by
+//   discipline in call sites.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- tenancy ---
+
+model Org {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  // Inbound address prefix: po+<inboundKey>@parse.kambio.app
+  inboundKey String  @unique
+  createdAt DateTime @default(now())
+
+  users     User[]
+  shipments Shipment[]
+}
+
+enum UserRole {
+  OWNER
+  OPS
+  VIEWER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  orgId        String
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(OPS)
+  createdAt    DateTime @default(now())
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+}
+
+// --------------------------------------------------------------- shipment ---
+
+enum ShipmentStatus {
+  DRAFT
+  PO_CONFIRMED
+  DOCS_IN_PREP
+  READY_TO_SHIP
+  IN_TRANSIT
+  DELIVERED
+  CLOSED
+  CANCELLED
+}
+
+model Shipment {
+  id        String         @id @default(cuid())
+  orgId     String
+  reference String // human ref, e.g. KMB-2026-014
+  title     String
+  status    ShipmentStatus @default(DRAFT)
+
+  // Trade context
+  poNumber      String?
+  invoiceNumber String?
+  incoterm      String?
+  currency      String?
+  totalValue    Decimal? @db.Decimal(14, 2)
+  originPort    String?
+  destPort      String?
+  originCountry String?
+  destCountry   String?
+  etd           DateTime?
+  eta           DateTime?
+  carrierRef    String? // BL / container / booking no.
+
+  // Per-shipment forwarding address token: ship+<inboundToken>@parse.kambio.app
+  inboundToken String @unique
+
+  // Projection bookkeeping — last event sequence folded into this row.
+  lastEventSeq Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  org        Org         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  parties    Party[]
+  documents  Document[]
+  messages   Message[]
+  tasks      Task[]
+  approvals  Approval[]
+  events     Event[]
+  buyerLinks BuyerLink[]
+  aiCalls    AiCall[]
+
+  @@unique([orgId, reference])
+  @@index([orgId, status])
+}
+
+enum PartyType {
+  EXPORTER
+  IMPORTER
+  CHA
+  FORWARDER
+  CARRIER
+  BANK
+}
+
+enum PartyChannel {
+  APP
+  EMAIL
+  WHATSAPP
+}
+
+model Party {
+  id         String       @id @default(cuid())
+  orgId      String
+  shipmentId String
+  type       PartyType
+  name       String
+  email      String?
+  phone      String? // E.164, used to match inbound WhatsApp
+  channel    PartyChannel @default(EMAIL)
+  createdAt  DateTime     @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, shipmentId])
+  @@index([email])
+  @@index([phone])
+}
+
+enum DocumentType {
+  COMMERCIAL_INVOICE
+  PACKING_LIST
+  PURCHASE_ORDER
+  BILL_OF_LADING
+  OTHER
+}
+
+enum ExtractionStatus {
+  PENDING
+  PROCESSING
+  NEEDS_REVIEW
+  CONFIRMED
+  FAILED
+}
+
+model Document {
+  id         String       @id @default(cuid())
+  orgId      String
+  shipmentId String
+  type       DocumentType
+  name       String
+  version    Int          @default(1)
+  // Documents with the same `family` are versions of one logical doc.
+  family     String
+
+  fileRef  String // storage key
+  mimeType String
+  sizeBytes Int    @default(0)
+
+  extractionStatus ExtractionStatus @default(PENDING)
+  // ExtractionResult (see src/server/ai/types.ts): per-field value + confidence + source snippet
+  extractedData    Json?
+  confidence       Float? // overall 0..1
+  confirmedById    String?
+  confirmedAt      DateTime?
+
+  uploadedAt DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([shipmentId, family, version])
+  @@index([orgId, shipmentId])
+}
+
+enum MessageChannel {
+  EMAIL
+  WHATSAPP
+  APP
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageIntent {
+  APPROVAL
+  CHANGE_REQUEST
+  QUESTION
+  DOC_SUBMISSION
+  STATUS_UPDATE
+  OTHER
+  UNKNOWN
+}
+
+model Message {
+  id         String           @id @default(cuid())
+  orgId      String
+  shipmentId String
+  channel    MessageChannel
+  direction  MessageDirection
+
+  fromAddress String?
+  toAddress   String?
+  subject     String?
+  rawText     String           @db.Text
+  externalId  String? // provider message id — used for idempotent ingestion
+
+  parsedIntent     MessageIntent @default(UNKNOWN)
+  // Structured interpretation, e.g. { approvedDocument: "invoice-v3", changes: [...] }
+  parsedPayload    Json?
+  intentConfidence Float?
+  // Verbatim quote from rawText that justifies the interpretation.
+  sourceSnippet    String?      @db.Text
+
+  createdAt DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([channel, externalId])
+  @@index([orgId, shipmentId, createdAt])
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+  DISMISSED
+}
+
+enum TaskSeverity {
+  BLOCKER // shipment cannot progress
+  WARNING // needs attention today
+  INFO
+}
+
+model Task {
+  id         String       @id @default(cuid())
+  orgId      String
+  shipmentId String
+  title      String
+  detail     String?      @db.Text
+  status     TaskStatus   @default(OPEN)
+  severity   TaskSeverity @default(WARNING)
+  // Deep-link target within the workspace, e.g. "document:<id>"
+  subjectRef String?
+  dueAt      DateTime?
+  createdAt  DateTime     @default(now())
+  closedAt   DateTime?
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, status, severity])
+  @@index([orgId, shipmentId])
+}
+
+enum ApprovalState {
+  REQUESTED
+  GRANTED
+  REJECTED
+}
+
+model Approval {
+  id         String        @id @default(cuid())
+  orgId      String
+  shipmentId String
+  subject    String // e.g. "Commercial Invoice v3"
+  subjectRef String? // e.g. "document:<id>"
+  state      ApprovalState @default(REQUESTED)
+  // The inbound message that evidences the decision — provenance for approvals.
+  evidenceMessageId String?
+  decidedAt  DateTime?
+  createdAt  DateTime      @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, shipmentId])
+}
+
+// ------------------------------------------------------- the event ledger ---
+
+enum ActorType {
+  USER
+  AI
+  SYSTEM
+  COUNTERPARTY
+}
+
+/// Append-only. Never updated, never deleted. See src/server/domain/events.ts
+/// for the discriminated union of payload shapes.
+model Event {
+  id         String    @id @default(cuid())
+  orgId      String
+  shipmentId String
+  /// Monotonic per shipment. The unique constraint gives optimistic concurrency.
+  seq        Int
+  type       String
+  payload    Json
+  actorType  ActorType
+  actorId    String?
+  actorLabel String?
+  createdAt  DateTime  @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([shipmentId, seq])
+  @@index([orgId, createdAt])
+  @@index([shipmentId, seq])
+}
+
+// ------------------------------------------------- buyer view / analytics ---
+
+model BuyerLink {
+  id         String    @id @default(cuid())
+  orgId      String
+  shipmentId String
+  token      String    @unique
+  label      String
+  // Set when the counterparty "graduates" to a real login.
+  claimedByUserId String?
+  viewCount  Int       @default(0)
+  lastViewedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, shipmentId])
+}
+
+/// One row per LLM/OCR call — powers per-shipment cost attribution.
+model AiCall {
+  id         String   @id @default(cuid())
+  orgId      String
+  shipmentId String?
+  task       String // "extract_document" | "classify_message" | "draft_reply"
+  provider   String // "mock" | "anthropic" | "openai"
+  model      String
+  inputTokens  Int    @default(0)
+  outputTokens Int    @default(0)
+  costUsd    Decimal  @default(0) @db.Decimal(12, 6)
+  latencyMs  Int      @default(0)
+  ok         Boolean  @default(true)
+  error      String?
+  createdAt  DateTime @default(now())
+
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([shipmentId])
+}

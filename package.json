@@ -1,25 +1,54 @@
 {
-  "name": "kambio-ai",
+  "name": "kambio",
   "version": "0.1.0",
   "private": true,
+  "description": "Kambio — an AI operating system for SME exporters",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "worker": "tsx worker/index.ts",
+    "worker:dev": "tsx watch worker/index.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
+    "@prisma/client": "^6.14.0",
+    "bcryptjs": "^3.0.2",
+    "bullmq": "^5.58.0",
+    "clsx": "^2.1.1",
+    "ioredis": "^5.7.0",
+    "jose": "^6.1.0",
+    "lucide-react": "^0.545.0",
+    "nanoid": "^5.1.6",
     "next": "^15.4.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "prisma": "^6.14.0",
     "tailwindcss": "^4.1.0",
-    "typescript": "^5"
+    "tsx": "^4.20.0",
+    "typescript": "^5",
+    "vitest": "^3.2.0"
   }
 }
