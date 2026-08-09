@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Kambio — Overview</title>
+    <style>
+      /* Kambio overview document.
+         Same tokens as landing/styles.css so print and web are one brand. */
+      :root {
+        --bg: #0a0c10;
+        --panel: #12151c;
+        --panel-2: #171b24;
+        --line: #232936;
+        --fg: #e9edf5;
+        --muted: #8b93a7;
+        --brand: #3ddc97;
+        --brand-dim: #1faa72;
+        --warn: #f5a623;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        width: 210mm;
+        height: 297mm;
+        padding: 18mm 17mm 14mm;
+        position: relative;
+        overflow: hidden;
+        page-break-after: always;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page:last-child {
+        page-break-after: auto;
+      }
+
+      /* ---------------------------------------------------------- wordmark */
+      .wordmark {
+        font-size: 15pt;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .wordmark i {
+        color: var(--brand);
+        font-style: normal;
+      }
+
+      /* ------------------------------------------------------------ header */
+      .runner {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 5mm;
+        margin-bottom: 9mm;
+      }
+      .runner .sec {
+        font-size: 7.5pt;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--brand);
+        font-weight: 600;
+      }
+
+      /* ------------------------------------------------------------- type */
+      h1 {
+        font-size: 30pt;
+        font-weight: 700;
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+      }
+      h2 {
+        font-size: 19pt;
+        font-weight: 700;
+        line-height: 1.18;
+        letter-spacing: -0.02em;
+        margin-bottom: 4mm;
+      }
+      h3 {
+        font-size: 10.5pt;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      p {
+        font-size: 9.5pt;
+        line-height: 1.65;
+        color: var(--muted);
+      }
+      p.lede {
+        font-size: 11pt;
+        line-height: 1.6;
+        max-width: 150mm;
+      }
+      strong {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .brand {
+        color: var(--brand);
+      }
+
+      /* ------------------------------------------------------------ blocks */
+      .card {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 3mm;
+        padding: 5mm;
+      }
+      .card h3 {
+        margin-bottom: 2mm;
+      }
+      .card p {
+        font-size: 8.5pt;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        gap: 4mm;
+      }
+      .grid.two {
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid.three {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .rule {
+        height: 1px;
+        background: var(--line);
+        margin: 7mm 0;
+      }
+
+      .tag {
+        display: inline-block;
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        border-radius: 999px;
+        padding: 1mm 3mm;
+        font-size: 7.5pt;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .tag.green {
+        border-color: rgba(31, 170, 114, 0.4);
+        background: rgba(31, 170, 114, 0.12);
+        color: var(--brand);
+      }
+      .tag.amber {
+        border-color: rgba(245, 166, 35, 0.4);
+        background: rgba(245, 166, 35, 0.12);
+        color: var(--warn);
+      }
+
+      .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 7mm;
+        height: 7mm;
+        border-radius: 2mm;
+        border: 1px solid rgba(31, 170, 114, 0.35);
+        background: rgba(31, 170, 114, 0.1);
+        color: var(--brand);
+        font-size: 9pt;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .step {
+        display: flex;
+        gap: 4mm;
+        align-items: flex-start;
+      }
+
+      /* ------------------------------------------------------------- table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8.5pt;
+      }
+      thead th {
+        font-size: 7pt;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        font-weight: 600;
+        padding: 3mm 2mm;
+        border-bottom: 1px solid var(--line);
+        text-align: center;
+      }
+      thead th:first-child {
+        text-align: left;
+      }
+      tbody td {
+        padding: 3mm 2mm;
+        border-bottom: 1px solid var(--line);
+        text-align: center;
+        color: var(--muted);
+      }
+      tbody td:first-child {
+        text-align: left;
+        color: var(--fg);
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .yes {
+        color: var(--brand);
+        font-weight: 700;
+      }
+      .no {
+        color: rgba(139, 147, 167, 0.45);
+      }
+
+      /* -------------------------------------------------------------- list */
+      ul.clean {
+        list-style: none;
+      }
+      ul.clean li {
+        position: relative;
+        padding-left: 6mm;
+        font-size: 9pt;
+        line-height: 1.6;
+        color: var(--muted);
+        margin-bottom: 2.5mm;
+      }
+      ul.clean li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 2.1mm;
+        width: 2mm;
+        height: 2mm;
+        border-radius: 50%;
+        background: var(--brand);
+      }
+
+      /* ------------------------------------------------------------ footer */
+      .foot {
+        margin-top: auto;
+        padding-top: 5mm;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        font-size: 7.5pt;
+        color: var(--muted);
+      }
+
+      /* -------------------------------------------------------------- cover */
+      .cover {
+        justify-content: space-between;
+        background:
+          radial-gradient(60% 45% at 78% 22%, rgba(31, 170, 114, 0.14), transparent 70%),
+          var(--bg);
+      }
+      .cover .mid {
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+      .cover h1 {
+        max-width: 155mm;
+      }
+      .cover .kicker {
+        font-size: 8pt;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brand);
+        font-weight: 600;
+      }
+
+      .quote {
+        border-left: 2px solid var(--brand);
+        padding-left: 5mm;
+      }
+      .quote p {
+        font-size: 10.5pt;
+        line-height: 1.6;
+        color: var(--fg);
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================================================================ 1 -->
+    <section class="page cover">
+      <div class="wordmark">kambio<i>.</i></div>
+
+      <div class="mid">
+        <p class="kicker">For SME exporters</p>
+        <h1 style="margin-top: 6mm">An AI teammate that runs your shipment operations.</h1>
+        <p class="lede" style="margin-top: 8mm">
+          Forward a buyer email. Kambio creates the shipment, reads every field out of it, and
+          opens a permissioned room where your CHA, forwarder and buyer can work — while you stay
+          the one who approves what goes out.
+        </p>
+        <div style="margin-top: 9mm">
+          <span class="tag green">Structured shipments</span>
+          <span class="tag green" style="margin-left: 2mm">Permissioned counterparties</span>
+          <span class="tag green" style="margin-left: 2mm">Humans in the loop</span>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>kambio.ai</span>
+        <span>Product overview</span>
+      </div>
+    </section>
+
+    <!-- ================================================================ 2 -->
+    <section class="page">
+      <div class="runner">
+        <span class="wordmark" style="font-size: 11pt">kambio<i>.</i></span>
+        <span class="sec">The problem</span>
+      </div>
+
+      <h2>Right now, the exporter is the integration layer.</h2>
+      <p class="lede">
+        After an order is confirmed, moving a shipment forward is mostly one person moving
+        documents and answers between people who cannot see each other's systems.
+      </p>
+
+      <div class="grid three" style="margin-top: 8mm">
+        <div class="card">
+          <span class="tag">Email</span>
+          <h3 style="margin-top: 3mm">Buyer</h3>
+          <p>
+            Sends the PO, then chases for the invoice, packing list and B/L in a thread that has
+            drifted twelve replies deep.
+          </p>
+        </div>
+        <div class="card">
+          <span class="tag">WhatsApp</span>
+          <h3 style="margin-top: 3mm">CHA</h3>
+          <p>
+            Wants HS codes and invoice values again, in a slightly different format, before the
+            checklist can be filed.
+          </p>
+        </div>
+        <div class="card">
+          <span class="tag">Email</span>
+          <h3 style="margin-top: 3mm">Forwarder</h3>
+          <p>
+            Needs weights, ports and dates — none of which live anywhere except in someone's head
+            and three attachments.
+          </p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 4mm; background: var(--panel-2)">
+        <h3 class="brand" style="font-size: 8pt; letter-spacing: 0.14em; text-transform: uppercase">
+          And in the middle
+        </h3>
+        <p style="margin-top: 2mm; font-size: 9.5pt">
+          A human copy-paste bridge. The same PO number typed four times, the same HS code
+          re-checked in three threads, and one version of the truth that exists only because
+          somebody remembers it.
+        </p>
+      </div>
+
+      <div class="rule"></div>
+
+      <h2 style="font-size: 15pt">What that costs</h2>
+      <div class="grid two" style="margin-top: 4mm">
+        <ul class="clean">
+          <li>Hours a day spent relaying rather than selling or sourcing.</li>
+          <li>Errors that survive because nobody re-reads what they retyped.</li>
+        </ul>
+        <ul class="clean">
+          <li>Documents reaching parties who should never have received them.</li>
+          <li>History that walks out of the door when a person leaves.</li>
+        </ul>
+      </div>
+
+      <div class="foot"><span>kambio.ai</span><span>2</span></div>
+    </section>
+
+    <!-- ================================================================ 3 -->
+    <section class="page">
+      <div class="runner">
+        <span class="wordmark" style="font-size: 11pt">kambio<i>.</i></span>
+        <span class="sec">How it works</span>
+      </div>
+
+      <h2>Four steps, starting from an email you already received.</h2>
+      <p class="lede">
+        Kambio does not ask your buyer or your CHA to change anything. It sits behind the channels
+        you already use and turns them into structure.
+      </p>
+
+      <div class="grid two" style="margin-top: 8mm">
+        <div class="card">
+          <div class="step">
+            <span class="num">1</span>
+            <div>
+              <h3>Forward the email</h3>
+              <p style="margin-top: 2mm">
+                Send a buyer enquiry or purchase order to your Kambio address. No integration
+                project, no data migration, no change to how your buyer writes to you.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="step">
+            <span class="num">2</span>
+            <div>
+              <h3>Kambio builds the shipment</h3>
+              <p style="margin-top: 2mm">
+                PO number, line items, HS codes, incoterms, amounts and parties are extracted
+                automatically — each field carrying a confidence score and the verbatim source
+                line it came from.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="step">
+            <span class="num">3</span>
+            <div>
+              <h3>Bring in the counterparties</h3>
+              <p style="margin-top: 2mm">
+                Your CHA, freight forwarder and buyer get a scoped link into the shipment room. No
+                signup, no licence, no new app — they keep using email and WhatsApp.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="step">
+            <span class="num">4</span>
+            <div>
+              <h3>You confirm, Kambio relays</h3>
+              <p style="margin-top: 2mm">
+                AI drafts the replies and the relay messages between parties. A human always
+                confirms before anything goes out. Nothing financially consequential is sent by AI.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <div class="quote">
+        <p>
+          The buyer asks for a change on the bill of lading. Kambio knows the forwarder issues that
+          document, writes the message to the forwarder carrying the buyer's words, and puts it in
+          front of you to send. You never open a second thread.
+        </p>
+      </div>
+
+      <div class="foot"><span>kambio.ai</span><span>3</span></div>
+    </section>
+
+    <!-- ================================================================ 4 -->
+    <section class="page">
+      <div class="runner">
+        <span class="wordmark" style="font-size: 11pt">kambio<i>.</i></span>
+        <span class="sec">The shipment room</span>
+      </div>
+
+      <h2>One room per shipment. Four parties. Four different views.</h2>
+      <p class="lede">
+        Every shipment is a permissioned room shared by the exporter, the CHA, the freight
+        forwarder and the buyer. Each party sees only the documents they are entitled to.
+      </p>
+
+      <div class="card" style="margin-top: 8mm; padding: 0">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 4mm 5mm;
+            border-bottom: 1px solid var(--line);
+          "
+        >
+          <h3>Who sees what</h3>
+          <span style="font-size: 7.5pt; color: var(--muted)">Default policy</span>
+        </div>
+
+        <div style="padding: 0 5mm">
+          <table>
+            <thead>
+              <tr>
+                <th>Document</th>
+                <th>Exporter</th>
+                <th>CHA</th>
+                <th>Forwarder</th>
+                <th>Buyer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Purchase order</td>
+                <td class="yes">✓</td>
+                <td class="no">—</td>
+                <td class="no">—</td>
+                <td class="yes">✓</td>
+              </tr>
+              <tr>
+                <td>Commercial invoice &amp; packing list</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+                <td class="no">—</td>
+                <td class="yes">✓</td>
+              </tr>
+              <tr>
+                <td>CHA checklist</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+                <td class="no">—</td>
+                <td class="no">—</td>
+              </tr>
+              <tr>
+                <td>Shipping bill</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+                <td class="no">—</td>
+              </tr>
+              <tr>
+                <td>Phytosanitary / fumigation / origin</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+                <td class="no">—</td>
+                <td class="yes">✓</td>
+              </tr>
+              <tr>
+                <td>BL draft &amp; bill of lading</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+                <td class="yes">✓</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="padding: 3.5mm 5mm; border-top: 1px solid var(--line)">
+          <p style="font-size: 7.5pt">
+            These are the defaults, derived from the document type. You can widen or narrow any
+            individual document.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top: 6mm">
+        <div>
+          <h3>Enforced, not advisory</h3>
+          <p style="margin-top: 2mm">
+            Visibility is applied in the database query, not in the interface. A document a party
+            may not see is absent from their results — not hidden by a filter that could be
+            bypassed. Kambio refuses outright to ask a party to review something they are not
+            entitled to.
+          </p>
+        </div>
+        <div>
+          <h3>Fails closed</h3>
+          <p style="margin-top: 2mm">
+            An unclassified document is visible to the exporter alone until someone decides
+            otherwise. When extraction re-classifies an upload — recognising it as a checklist, say
+            — the policy is re-applied immediately.
+          </p>
+        </div>
+      </div>
+
+      <div class="foot"><span>kambio.ai</span><span>4</span></div>
+    </section>
+
+    <!-- ================================================================ 5 -->
+    <section class="page">
+      <div class="runner">
+        <span class="wordmark" style="font-size: 11pt">kambio<i>.</i></span>
+        <span class="sec">What each party gets</span>
+      </div>
+
+      <h2>Nobody has to adopt anything.</h2>
+      <p class="lede">
+        Only the exporter has an account. Everyone else takes part through a scoped link, or simply
+        keeps replying to email as they always have.
+      </p>
+
+      <div class="grid two" style="margin-top: 8mm">
+        <div class="card">
+          <span class="tag green">Exporter</span>
+          <h3 style="margin-top: 3mm">Stops being the bridge</h3>
+          <p style="margin-top: 2mm">
+            One workspace per shipment instead of four threads. Fields extracted with their sources
+            so figures are checkable, not retyped. A queue that opens on what is blocked today
+            rather than a list of everything. Drafted replies waiting for a decision, not a blank
+            compose window.
+          </p>
+        </div>
+
+        <div class="card">
+          <span class="tag green">CHA</span>
+          <h3 style="margin-top: 3mm">Asks once, gets an answer</h3>
+          <p style="margin-top: 2mm">
+            A link to exactly one shipment, showing the documents relevant to clearing it. Upload
+            the checklist and the shipping bill straight into the room. Request changes and have
+            them reach the right person without a phone call. No login, no software.
+          </p>
+        </div>
+
+        <div class="card">
+          <span class="tag green">Freight forwarder</span>
+          <h3 style="margin-top: 3mm">Has what they need, and no more</h3>
+          <p style="margin-top: 2mm">
+            The shipping bill needed to release the bill of lading, and nothing from the exporter's
+            internal working papers. Upload the BL draft where everyone entitled to it can see it.
+            A different forwarder every sailing is normal and costs nothing to set up.
+          </p>
+        </div>
+
+        <div class="card">
+          <span class="tag green">Buyer</span>
+          <h3 style="margin-top: 3mm">Stops asking "where is it?"</h3>
+          <p style="margin-top: 2mm">
+            A read-only link showing live status, route and dates, plus the documents they are
+            entitled to. No signup. They never see a shipping bill or a customs checklist — not
+            because someone remembered to trim recipients, but because the room does not contain
+            them.
+          </p>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <h3>One thread per shipment, per party</h3>
+      <p style="margin-top: 2mm">
+        Every message Kambio sends a party continues a single email chain, with a stable
+        reference-prefixed subject. One shipment is one conversation — not five subject lines to
+        search through six weeks later. When a party goes quiet on a review request, Kambio chases
+        them: capped, and it stops the moment they reply.
+      </p>
+
+      <div class="foot"><span>kambio.ai</span><span>5</span></div>
+    </section>
+
+    <!-- ================================================================ 6 -->
+    <section class="page">
+      <div class="runner">
+        <span class="wordmark" style="font-size: 11pt">kambio<i>.</i></span>
+        <span class="sec">Trust &amp; architecture</span>
+      </div>
+
+      <h2>AI drafts. People decide. The record keeps itself.</h2>
+      <p class="lede">
+        Export operations carry money and legal exposure. Kambio is built so that automation never
+        becomes an unaccountable actor in the business.
+      </p>
+
+      <div class="grid two" style="margin-top: 8mm">
+        <div class="card">
+          <h3>A human confirms what matters</h3>
+          <p style="margin-top: 2mm">
+            Approvals, extracted-field commits and outbound replies all refuse an AI actor at the
+            code level. Not a policy — a check that throws. Nothing financially consequential
+            leaves without a person.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Provenance on every AI output</h3>
+          <p style="margin-top: 2mm">
+            Each extracted value carries a confidence score and the verbatim line it was read from.
+            Anything below the threshold is flagged and raises a blocking task rather than quietly
+            becoming fact.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>An audit trail you cannot rewrite</h3>
+          <p style="margin-top: 2mm">
+            Every state change is an append-only event. The shipment's current state is derived
+            from that log, so who changed what, when, and from which source document is answerable
+            months later without anyone's memory.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Model-agnostic by design</h3>
+          <p style="margin-top: 2mm">
+            The AI layer is an interface with swappable providers, and token cost is attributed per
+            shipment. Run Kambio on one vendor today and another tomorrow without touching the
+            domain logic.
+          </p>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <h3>Isolation between customers</h3>
+      <p style="margin-top: 2mm">
+        Tenancy is enforced at the query layer, not at call sites. Every database read and write is
+        rewritten to scope to the signed-in organisation, and a write naming a different
+        organisation throws rather than succeeding quietly. A developer who forgets to filter still
+        cannot reach another customer's data.
+      </p>
+
+      <div class="foot"><span>kambio.ai</span><span>6</span></div>
+    </section>
+
+    <!-- ================================================================ 7 -->
+    <section class="page">
+      <div class="runner">
+        <span class="wordmark" style="font-size: 11pt">kambio<i>.</i></span>
+        <span class="sec">Where things stand</span>
+      </div>
+
+      <h2>Built, and honest about the edges.</h2>
+      <p class="lede">
+        Kambio is a working product, not a concept. It is also early, and the gaps are worth
+        stating plainly.
+      </p>
+
+      <div class="grid two" style="margin-top: 8mm">
+        <div class="card">
+          <span class="tag green">Working today</span>
+          <ul class="clean" style="margin-top: 4mm">
+            <li>Email-in shipment creation with field extraction and provenance</li>
+            <li>The permissioned room, with enforcement at the query layer</li>
+            <li>Scoped counterparty links for CHA, forwarder and buyer</li>
+            <li>AI-drafted replies and cross-party relay, human-confirmed</li>
+            <li>Automated, capped follow-ups on unanswered requests</li>
+            <li>One email thread per shipment per party</li>
+            <li>Append-only event ledger and per-shipment AI cost tracking</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <span class="tag amber">Not yet</span>
+          <ul class="clean" style="margin-top: 4mm">
+            <li>
+              OCR for scanned documents. Text files and PDFs with a text layer extract; photographs
+              of paper do not.
+            </li>
+            <li>Carrier tracking is designed for but not connected.</li>
+            <li>Per-role permissions inside the exporter's own team.</li>
+            <li>WhatsApp works within Meta's messaging window; templates are unregistered.</li>
+          </ul>
+          <p style="margin-top: 4mm; font-size: 8pt">
+            Deliberately out of scope: trade finance, lending, payments, insurance, marketplace,
+            customs filing.
+          </p>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <h2 style="font-size: 15pt">See it on one of your own shipments</h2>
+      <p style="margin-top: 3mm; max-width: 140mm">
+        The fastest way to judge Kambio is to forward it a real purchase order and watch the
+        shipment build itself — fields, sources, confidence and all. It takes a few minutes, and
+        nothing has to change on your counterparties' side.
+      </p>
+
+      <div class="card" style="margin-top: 6mm; background: var(--panel-2)">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <div>
+            <h3>Talk to us</h3>
+            <p style="margin-top: 1.5mm; font-size: 9pt">
+              kambio.ai &nbsp;·&nbsp; hello@kambio.ai
+            </p>
+          </div>
+          <span class="wordmark" style="font-size: 17pt">kambio<i>.</i></span>
+        </div>
+      </div>
+
+      <div class="foot"><span>kambio.ai</span><span>7</span></div>
+    </section>
+  </body>
+</html>
