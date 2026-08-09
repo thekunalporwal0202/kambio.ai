@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Kambio — social cards</title>
+    <style>
+      /* Ready-to-export social cards.
+         Same tokens as landing/styles.css. Render with brand/render-cards.mjs,
+         or open in a browser and screenshot each .card element.
+
+         To add a card: copy a <section>, set its width/height, edit the copy.
+         The wordmark is live text in Inter, so it is never misspelt. */
+
+      @font-face {
+        font-family: Inter;
+        src: url("../node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2")
+          format("woff2");
+        font-weight: 600;
+      }
+      @font-face {
+        font-family: Inter;
+        src: url("../node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2")
+          format("woff2");
+        font-weight: 700;
+      }
+      @font-face {
+        font-family: Inter;
+        src: url("../node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2")
+          format("woff2");
+        font-weight: 400;
+      }
+
+      :root {
+        --bg: #0a0c10;
+        --panel: #12151c;
+        --panel-2: #171b24;
+        --line: #232936;
+        --fg: #e9edf5;
+        --muted: #8b93a7;
+        --brand: #3ddc97;
+        --warn: #f5a623;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #2a2a2a;
+        font-family: Inter, system-ui, sans-serif;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        padding: 24px;
+      }
+
+      .card {
+        background: var(--bg);
+        color: var(--fg);
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+      }
+
+      /* ------------------------------------------------------- the wordmark */
+      .mark {
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        color: var(--fg);
+        white-space: nowrap;
+      }
+      .mark i {
+        color: var(--brand);
+        font-style: normal;
+      }
+
+      h1 {
+        font-weight: 700;
+        letter-spacing: -0.028em;
+        line-height: 1.05;
+      }
+      .sub {
+        color: var(--muted);
+        font-weight: 400;
+        line-height: 1.55;
+      }
+
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(61, 220, 151, 0.18), transparent 68%);
+        pointer-events: none;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 12px;
+      }
+      .row {
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      svg.tick {
+        stroke: var(--brand);
+        stroke-width: 2.5;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      svg.dash {
+        stroke: rgba(139, 147, 167, 0.42);
+        stroke-width: 2.5;
+        fill: none;
+        stroke-linecap: round;
+      }
+      svg.bubble {
+        stroke: var(--line);
+        stroke-width: 2;
+        fill: var(--panel);
+      }
+
+      /* ============================================ 1. launch — 1200 x 627 */
+      #launch {
+        width: 1200px;
+        height: 627px;
+        padding: 64px;
+        align-items: center;
+        gap: 56px;
+      }
+      #launch .left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+      }
+      #launch .mark {
+        font-size: 30px;
+      }
+      #launch h1 {
+        font-size: 62px;
+        max-width: 9em;
+      }
+      #launch .sub {
+        font-size: 19px;
+        max-width: 22em;
+        margin-top: 20px;
+      }
+      #launch .art {
+        width: 400px;
+        position: relative;
+        flex-shrink: 0;
+      }
+      #launch .panel {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #launch .row {
+        height: 58px;
+        padding-right: 18px;
+      }
+
+      /* =========================================== 2. problem — 1080 x 1080 */
+      #problem {
+        width: 1080px;
+        height: 1080px;
+        padding: 72px;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      #problem .mark {
+        font-size: 32px;
+      }
+      #problem .scatter {
+        flex: 1;
+        position: relative;
+      }
+      #problem .scatter svg {
+        position: absolute;
+      }
+      #problem h1 {
+        font-size: 76px;
+        max-width: 11em;
+      }
+      #problem .sub {
+        font-size: 22px;
+        margin-top: 24px;
+        max-width: 26em;
+      }
+
+      /* ==================================== 3. permission wall — 1080 x 1080 */
+      #wall {
+        width: 1080px;
+        height: 1080px;
+        padding: 72px;
+        flex-direction: column;
+      }
+      #wall .mark {
+        font-size: 32px;
+      }
+      #wall .mid {
+        margin-top: auto;
+        margin-bottom: auto;
+        width: 100%;
+      }
+      #wall .foot {
+        font-size: 19px;
+        color: var(--brand);
+        font-weight: 600;
+      }
+      #wall h1 {
+        font-size: 64px;
+        max-width: 12em;
+      }
+      #wall .sub {
+        font-size: 21px;
+        margin-top: 22px;
+        max-width: 26em;
+      }
+      #wall .matrix {
+        margin-top: 56px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      #wall .mrow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 28px;
+        border-bottom: 1px solid var(--line);
+      }
+      #wall .mrow:last-child {
+        border-bottom: 0;
+      }
+      #wall .doc {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      #wall .doc svg {
+        stroke: var(--muted);
+        stroke-width: 1.8;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #wall .marks {
+        display: flex;
+        gap: 24px;
+      }
+      #wall .dot {
+        width: 92px;
+        display: flex;
+        justify-content: center;
+      }
+      #wall .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 28px 14px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel-2);
+      }
+      #wall .head .lbl {
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      #wall .head .dot {
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      /* The column the headline is about. */
+      #wall .head .dot.buyer {
+        color: var(--brand);
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================================================= 1. LAUNCH 1200x627 -->
+    <section class="card" id="launch">
+      <div class="glow" style="width: 620px; height: 620px; right: -140px; top: -60px"></div>
+
+      <div class="left">
+        <span class="mark">kambio<i>.</i></span>
+        <div>
+          <h1>Stop being the bridge.</h1>
+          <p class="sub">
+            One room per shipment — your CHA, forwarder and buyer already in it, each seeing only
+            what they should.
+          </p>
+        </div>
+        <span style="font-size: 17px; color: var(--brand); font-weight: 600">kambio.ai</span>
+      </div>
+
+      <div class="art">
+        <div class="panel">
+          <div class="row">
+            <svg class="tick" width="22" height="22" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+          </div>
+          <div class="row">
+            <svg class="tick" width="22" height="22" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+          </div>
+          <div class="row">
+            <svg class="tick" width="22" height="22" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+          </div>
+          <div class="row">
+            <svg class="tick" width="22" height="22" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================ 2. PROBLEM 1080x1080 -->
+    <section class="card" id="problem">
+      <span class="mark">kambio<i>.</i></span>
+
+      <div class="scatter">
+        <svg class="bubble" width="260" height="180" viewBox="0 0 130 90" style="left: 20px; top: 60px; transform: rotate(-7deg)">
+          <rect x="2" y="2" width="126" height="70" rx="10" />
+          <path d="M22 72 L18 86 L38 72 Z" />
+        </svg>
+        <svg class="bubble" width="280" height="190" viewBox="0 0 130 90" style="left: 330px; top: 150px; transform: rotate(6deg)">
+          <rect x="2" y="2" width="126" height="70" rx="10" />
+          <path d="M22 72 L18 86 L38 72 Z" />
+        </svg>
+        <svg class="bubble" width="250" height="175" viewBox="0 0 130 90" style="left: 90px; top: 300px; transform: rotate(-3deg)">
+          <rect x="2" y="2" width="126" height="70" rx="10" />
+          <path d="M22 72 L18 86 L38 72 Z" />
+        </svg>
+        <div class="glow" style="width: 300px; height: 300px; right: 20px; bottom: 0"></div>
+      </div>
+
+      <div>
+        <h1>Four threads.<br />One shipment.<br /><span style="color: var(--muted)">No source of truth.</span></h1>
+        <p class="sub">
+          The buyer emails. The CHA asks on WhatsApp. The forwarder replies somewhere else. You are
+          the only thing connecting them.
+        </p>
+      </div>
+    </section>
+
+    <!-- ================================================== 3. WALL 1080x1080 -->
+    <section class="card" id="wall">
+      <span class="mark">kambio<i>.</i></span>
+
+      <div class="mid">
+        <h1>Your buyer never sees the shipping bill.</h1>
+        <p class="sub">
+          Not because someone remembered to trim the recipients. Because the room does not contain
+          it.
+        </p>
+
+        <div class="matrix">
+        <div class="head">
+          <span class="lbl">Document</span>
+          <span class="marks">
+            <span class="dot">Exporter</span>
+            <span class="dot">CHA</span>
+            <span class="dot">Forwarder</span>
+            <span class="dot buyer">Buyer</span>
+          </span>
+        </div>
+
+        <div class="mrow">
+          <span class="doc">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+            Purchase order
+          </span>
+          <span class="marks">
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="dash" width="26" height="26" viewBox="0 0 24 24"><path d="M6 12h12" /></svg></span>
+            <span class="dot"><svg class="dash" width="26" height="26" viewBox="0 0 24 24"><path d="M6 12h12" /></svg></span>
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+          </span>
+        </div>
+
+        <div class="mrow">
+          <span class="doc">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+            CHA checklist
+          </span>
+          <span class="marks">
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="dash" width="26" height="26" viewBox="0 0 24 24"><path d="M6 12h12" /></svg></span>
+            <span class="dot"><svg class="dash" width="26" height="26" viewBox="0 0 24 24"><path d="M6 12h12" /></svg></span>
+          </span>
+        </div>
+
+        <div class="mrow">
+          <span class="doc">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+            Shipping bill
+          </span>
+          <span class="marks">
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="dash" width="26" height="26" viewBox="0 0 24 24"><path d="M6 12h12" /></svg></span>
+          </span>
+        </div>
+
+        <div class="mrow">
+          <span class="doc">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+            Bill of lading
+          </span>
+          <span class="marks">
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            <span class="dot"><svg class="tick" width="26" height="26" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg></span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <span class="foot">kambio.ai</span>
+    </section>
+  </body>
+</html>
