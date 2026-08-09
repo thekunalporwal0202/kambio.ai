@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Kambio — the AI operating system for SME exporters</title>
+    <meta
+      name="description"
+      content="Forward a buyer email and Kambio creates the shipment, extracts every field with a confidence score and its source line, and gives your CHA, forwarder and buyer a permissioned room to work in."
+    />
+
+    <!-- CHANGE ME: replace kambio.example with your real domain, everywhere below. -->
+    <link rel="canonical" href="https://kambio.example/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kambio.example/" />
+    <meta property="og:title" content="Kambio — the AI operating system for SME exporters" />
+    <meta
+      property="og:description"
+      content="Forward a buyer email. Kambio builds the shipment, reads every field out of it, and opens a permissioned room for your CHA, forwarder and buyer."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0a0c10" />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230a0c10'/><text x='16' y='23' font-size='20' font-family='system-ui,sans-serif' font-weight='700' fill='%233ddc97' text-anchor='middle'>k</text></svg>"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- ==================================================================== -->
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="#top" class="wordmark">kambio<span>.</span></a>
+
+        <nav class="nav" aria-label="Primary">
+          <a href="#how-it-works">How it works</a>
+          <a href="#features">Features</a>
+          <a href="#shipment-room">Shipment room</a>
+          <a href="#trust">Security</a>
+        </nav>
+
+        <a class="btn btn--primary btn--sm header-cta" href="#contact">Book a demo</a>
+        <a class="btn btn--primary btn--sm header-cta--mobile" href="#contact">Demo</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- ============================================================= hero -->
+      <section class="section hero" id="top">
+        <div class="container">
+          <div class="hero__grid">
+            <div>
+              <span class="badge badge--brand badge--pill">For SME exporters</span>
+
+              <h1>An AI teammate that runs your shipment operations.</h1>
+
+              <p class="hero__lede">
+                Forward a buyer email. Kambio creates the shipment, reads every field out of it,
+                and opens a permissioned room where your CHA, forwarder and buyer can work — while
+                you stay the one who approves what goes out.
+              </p>
+
+              <div class="hero__actions">
+                <a class="btn btn--primary" href="#contact">
+                  Book a demo
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </a>
+                <a class="btn btn--ghost" href="#how-it-works">See how it works</a>
+              </div>
+
+              <p class="hero__note">
+                Works with the email and WhatsApp threads you already have. No migration.
+              </p>
+            </div>
+
+            <!-- The hero visual: a raw buyer email, and what Kambio reads out of it. -->
+            <div class="preview">
+              <div class="preview__bar">
+                <span class="preview__bar-label">
+                  <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+                  </svg>
+                  Forwarded buyer email
+                </span>
+                <span class="badge badge--brand">Parsed</span>
+              </div>
+
+              <div class="preview__email">
+                <p class="subject">Subject: Purchase Order — denim programme</p>
+                <p>Purchase Order No: PO-4471-SE</p>
+                <p>Incoterm: CIF Gothenburg</p>
+                <p>Indigo denim 12oz | 5209.42 | 6000 | 5.20</p>
+                <p>Total: 31200.00</p>
+              </div>
+
+              <div class="preview__divider">
+                <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+                Extracted with source and confidence
+              </div>
+
+              <div class="field-row">
+                <div>
+                  <div class="field-row__label">PO number</div>
+                  <div class="field-row__value">PO-4471-SE</div>
+                </div>
+                <span class="chip chip--high" title="Source: Purchase Order No: PO-4471-SE">97%</span>
+              </div>
+              <div class="field-row">
+                <div>
+                  <div class="field-row__label">Incoterm</div>
+                  <div class="field-row__value">CIF</div>
+                </div>
+                <span class="chip chip--high" title="Source: Incoterm: CIF Gothenburg">94%</span>
+              </div>
+              <div class="field-row">
+                <div>
+                  <div class="field-row__label">HS code</div>
+                  <div class="field-row__value">5209.42</div>
+                </div>
+                <span class="chip chip--high" title="Source: Indigo denim 12oz | 5209.42">88%</span>
+              </div>
+              <div class="field-row">
+                <div>
+                  <div class="field-row__label">Amount</div>
+                  <div class="field-row__value">USD 31,200.00</div>
+                </div>
+                <span class="chip chip--low" title="Source: Total: 31200.00">72% — check</span>
+              </div>
+
+              <div class="preview__foot">
+                <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                </svg>
+                Low-confidence fields wait for a human before anything is sent.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================== problem -->
+      <section class="section section--bordered section--tinted">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">The problem</span>
+            <h2>Right now, you are the integration layer.</h2>
+            <p>
+              The buyer emails. The CHA asks on WhatsApp. The forwarder replies to a different
+              thread. Nothing is connected except a person retyping the same purchase order into
+              three conversations.
+            </p>
+          </div>
+
+          <div class="grid grid--3">
+            <article class="card card--channel">
+              <div class="channel-head">
+                <h3>Buyer</h3>
+                <span class="channel-tag">Email</span>
+              </div>
+              <p>
+                Sends the PO, then chases for the invoice, the packing list and the B/L in a thread
+                that has drifted twelve replies deep.
+              </p>
+            </article>
+
+            <article class="card card--channel">
+              <div class="channel-head">
+                <h3>CHA</h3>
+                <span class="channel-tag">WhatsApp</span>
+              </div>
+              <p>
+                Wants the HS codes and the invoice values again, in a slightly different format,
+                before the checklist can be filed.
+              </p>
+            </article>
+
+            <article class="card card--channel">
+              <div class="channel-head">
+                <h3>Freight forwarder</h3>
+                <span class="channel-tag">Email</span>
+              </div>
+              <p>
+                Needs weights, ports and dates — and none of it lives anywhere except in your head
+                and three attachments.
+              </p>
+            </article>
+          </div>
+
+          <div class="bridge">
+            <span class="bridge__label">
+              <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              And in the middle
+            </span>
+            <p>
+              A human copy-paste bridge. The same PO number typed four times, the same HS code
+              re-checked in three threads, and one version of the truth that only exists because
+              somebody remembers it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== how it works -->
+      <section class="section section--bordered" id="how-it-works">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">How it works</span>
+            <h2>Four steps, starting from an email you already received.</h2>
+            <p>
+              Kambio does not ask your buyer or your CHA to change anything. It sits behind the
+              channels you already use and turns them into structure.
+            </p>
+          </div>
+
+          <div class="grid grid--2">
+            <article class="card card--step">
+              <div class="step-head">
+                <span class="icon-tile icon-tile--brand">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+                  </svg>
+                </span>
+                <span class="step-num">STEP 1</span>
+              </div>
+              <h3>Forward the email</h3>
+              <p>
+                Send a buyer enquiry or purchase order to your Kambio address. No integration
+                project, no data migration, no change to how your buyer writes to you.
+              </p>
+            </article>
+
+            <article class="card card--step">
+              <div class="step-head">
+                <span class="icon-tile icon-tile--brand">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 2v6h6" />
+                    <circle cx="11.5" cy="14.5" r="2.5" />
+                    <path d="m13.3 16.3 2.2 2.2" />
+                  </svg>
+                </span>
+                <span class="step-num">STEP 2</span>
+              </div>
+              <h3>Kambio builds the shipment</h3>
+              <p>
+                PO number, line items, HS codes, incoterms, amounts and parties are extracted
+                automatically — each field carrying a confidence score and the verbatim source line
+                it came from.
+              </p>
+            </article>
+
+            <article class="card card--step">
+              <div class="step-head">
+                <span class="icon-tile icon-tile--brand">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </span>
+                <span class="step-num">STEP 3</span>
+              </div>
+              <h3>Bring in the counterparties</h3>
+              <p>
+                Your CHA, freight forwarder and buyer get a scoped link into the shipment room. No
+                signup, no licence, no new app — they keep using email and WhatsApp.
+              </p>
+            </article>
+
+            <article class="card card--step">
+              <div class="step-head">
+                <span class="icon-tile icon-tile--brand">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+                  </svg>
+                </span>
+                <span class="step-num">STEP 4</span>
+              </div>
+              <h3>You confirm, Kambio relays</h3>
+              <p>
+                AI drafts the replies and the relay messages between parties. A human always
+                confirms before anything goes out. Nothing financially consequential is sent by AI.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= features -->
+      <section class="section section--bordered section--tinted" id="features">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">Features</span>
+            <h2>Built for the way export operations actually run.</h2>
+            <p>
+              Not a CRM with a shipping tab. A shipment record that reads its own paperwork and
+              keeps four parties honest about the same set of facts.
+            </p>
+          </div>
+
+          <div class="grid grid--sm2 grid--lg3">
+            <article class="card">
+              <span class="icon-tile">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+                  <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+                </svg>
+              </span>
+              <h3>Email-in shipment creation</h3>
+              <p>
+                A forwarded buyer email or PO becomes a live shipment record. The inbox stays where
+                your business already runs.
+              </p>
+            </article>
+
+            <article class="card">
+              <span class="icon-tile">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 2v6h6" />
+                  <circle cx="11.5" cy="14.5" r="2.5" />
+                  <path d="m13.3 16.3 2.2 2.2" />
+                </svg>
+              </span>
+              <h3>Extraction with provenance</h3>
+              <p>
+                PO number, line items, HS codes, incoterms, amounts and parties — every value shows
+                how confident the model is and the exact line it was read from.
+              </p>
+            </article>
+
+            <article class="card">
+              <span class="icon-tile">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2.97 12.92 9 16.5v5.17a1 1 0 0 0 1.51.86l2-1.19" />
+                  <path d="m7 16.5-4.74-2.85a1 1 0 0 1 0-1.71L7 9" />
+                  <path d="m14 8 6.74 4.04a1 1 0 0 1 0 1.72L14 17.83" />
+                  <path d="M12 2.5 5.5 6.4a1 1 0 0 0 0 1.7L12 12l6.5-3.9a1 1 0 0 0 0-1.7z" />
+                </svg>
+              </span>
+              <h3>One room per shipment</h3>
+              <p>
+                Exporter, CHA, freight forwarder and buyer work against a single shipment record
+                instead of four divergent email threads.
+              </p>
+            </article>
+
+            <article class="card">
+              <span class="icon-tile">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 17H7A5 5 0 0 1 7 7h2" />
+                  <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
+                  <path d="M8 12h8" />
+                </svg>
+              </span>
+              <h3>Counterparties without accounts</h3>
+              <p>
+                A scoped link is all a CHA or a buyer needs. Nobody has to sign up, install anything
+                or learn your software.
+              </p>
+            </article>
+
+            <article class="card">
+              <span class="icon-tile">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </span>
+              <h3>Drafted replies, human sign-off</h3>
+              <p>
+                Kambio writes the response and the relay message. You read it, edit it and send it.
+                The AI never commits on your behalf.
+              </p>
+            </article>
+
+            <article class="card">
+              <span class="icon-tile">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 3v5h5" />
+                  <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+                  <path d="M12 7v5l4 2" />
+                </svg>
+              </span>
+              <h3>Immutable event log</h3>
+              <p>
+                Every state change is recorded as an event that cannot be edited, so the shipment's
+                full history is always reconstructable.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== shipment room -->
+      <section class="section section--bordered" id="shipment-room">
+        <div class="container">
+          <div class="room">
+            <div>
+              <div class="section-heading">
+                <span class="eyebrow">The shipment room</span>
+                <h2>One room per shipment. Four parties. Four different views.</h2>
+                <p>
+                  Every shipment is a permissioned room shared by the exporter, the CHA, the freight
+                  forwarder and the buyer. Each party sees only the documents they are entitled to —
+                  the CHA's checklist is never visible to the buyer.
+                </p>
+              </div>
+
+              <ul class="room__list">
+                <li>
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+                  </svg>
+                  <span>
+                    Nobody is bcc'd into a thread they should not be reading. Visibility is a
+                    property of the room, not of who remembered to trim the recipients.
+                  </span>
+                </li>
+                <li>
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 17H7A5 5 0 0 1 7 7h2" />
+                    <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
+                    <path d="M8 12h8" />
+                  </svg>
+                  <span>
+                    Counterparties need no signup. They get a scoped link and keep replying on email
+                    or WhatsApp exactly as before.
+                  </span>
+                </li>
+                <li>
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 3v5h5" />
+                    <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+                    <path d="M12 7v5l4 2" />
+                  </svg>
+                  <span>
+                    Everything that happens in the room lands in the shipment's immutable event log,
+                    so the trail survives staff turnover.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="matrix">
+              <div class="matrix__head">
+                <h3>Who sees what</h3>
+                <span>Example room</span>
+              </div>
+
+              <div class="matrix__scroll">
+                <table>
+                  <caption class="hp">
+                    Which party can see which document in an example shipment room
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Document</th>
+                      <th scope="col">Exporter</th>
+                      <th scope="col">CHA</th>
+                      <th scope="col">Forwarder</th>
+                      <th scope="col">Buyer</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Purchase order</td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon no" viewBox="0 0 24 24" role="img" aria-label="No"><path d="M5 12h14"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                    </tr>
+                    <tr>
+                      <td>Commercial invoice &amp; packing list</td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                    </tr>
+                    <tr>
+                      <td>CHA checklist</td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon no" viewBox="0 0 24 24" role="img" aria-label="No"><path d="M5 12h14"/></svg></td>
+                      <td><svg class="icon no" viewBox="0 0 24 24" role="img" aria-label="No"><path d="M5 12h14"/></svg></td>
+                    </tr>
+                    <tr>
+                      <td>Bill of lading</td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon no" viewBox="0 0 24 24" role="img" aria-label="No"><path d="M5 12h14"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                    </tr>
+                    <tr>
+                      <td>Internal costing</td>
+                      <td><svg class="icon yes" viewBox="0 0 24 24" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></td>
+                      <td><svg class="icon no" viewBox="0 0 24 24" role="img" aria-label="No"><path d="M5 12h14"/></svg></td>
+                      <td><svg class="icon no" viewBox="0 0 24 24" role="img" aria-label="No"><path d="M5 12h14"/></svg></td>
+                      <td><svg class="icon no" viewBox="0 0 24 24" role="img" aria-label="No"><path d="M5 12h14"/></svg></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="matrix__foot">
+                Illustrative. You decide what each party is entitled to on a shipment.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ trust -->
+      <section class="section section--bordered section--tinted" id="trust">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">Trust &amp; security</span>
+            <h2>AI drafts. People decide. The record keeps itself.</h2>
+            <p>
+              Export operations carry money and legal exposure. Kambio is built so that automation
+              never becomes an unaccountable actor in your business.
+            </p>
+          </div>
+
+          <div class="grid grid--sm2">
+            <article class="card">
+              <div class="trust-head">
+                <span class="icon-tile">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                </span>
+                <h3>A human confirms everything that matters</h3>
+              </div>
+              <p>
+                AI proposes; people decide. Nothing financially consequential — a price, a
+                confirmation, a commitment to a buyer — is sent without a person approving it first.
+              </p>
+            </article>
+
+            <article class="card">
+              <div class="trust-head">
+                <span class="icon-tile">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 3v5h5" />
+                    <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+                    <path d="M12 7v5l4 2" />
+                  </svg>
+                </span>
+                <h3>An audit trail you cannot rewrite</h3>
+              </div>
+              <p>
+                Every state change is an immutable event. Who changed what, when, and off which
+                source document is answerable months later without anyone's memory.
+              </p>
+            </article>
+
+            <article class="card">
+              <div class="trust-head">
+                <span class="icon-tile">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <h3>Access scoped per party</h3>
+              </div>
+              <p>
+                Counterparties reach exactly one shipment through a scoped link, and only the
+                documents they are entitled to inside it.
+              </p>
+            </article>
+
+            <article class="card">
+              <div class="trust-head">
+                <span class="icon-tile">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                    <rect x="9" y="9" width="6" height="6" />
+                    <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" />
+                  </svg>
+                </span>
+                <h3>Model-agnostic by design</h3>
+              </div>
+              <p>
+                Run Kambio on Anthropic, on OpenAI, or on a model you host yourself. The product
+                does not depend on any single vendor.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================== contact -->
+      <section class="section section--bordered" id="contact">
+        <div class="container">
+          <div class="contact">
+            <div class="section-heading">
+              <span class="eyebrow">Get in touch</span>
+              <h2>See it on one of your own shipments.</h2>
+              <p>
+                Tell us a little about how you export today and we will walk you through Kambio on a
+                real purchase order — yours, if you want. No slide deck.
+              </p>
+              <p>
+                Prefer email? Write to
+                <!-- CHANGE ME: your real address. -->
+                <a href="mailto:hello@kambio.example" style="color: var(--brand)"
+                  >hello@kambio.example</a
+                >.
+              </p>
+            </div>
+
+            <form class="form" id="lead-form" method="post" action="contact.php" novalidate>
+              <div id="form-alert" class="alert" role="status" hidden></div>
+
+              <div class="form__row form__row--2">
+                <label class="field">
+                  <span>Your name</span>
+                  <input type="text" name="name" required autocomplete="name" placeholder="Priya Raman" />
+                </label>
+
+                <label class="field">
+                  <span>Work email</span>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    placeholder="you@company.com"
+                  />
+                </label>
+              </div>
+
+              <div class="form__row form__row--2">
+                <label class="field">
+                  <span>Company</span>
+                  <input
+                    type="text"
+                    name="company"
+                    required
+                    autocomplete="organization"
+                    placeholder="Meridian Textiles"
+                  />
+                </label>
+
+                <label class="field">
+                  <span>Shipments per month</span>
+                  <select name="volume">
+                    <option value="">Select…</option>
+                    <option>1–10</option>
+                    <option>11–50</option>
+                    <option>51–200</option>
+                    <option>200+</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="field">
+                <span>What does your export process look like today?</span>
+                <textarea
+                  name="message"
+                  rows="4"
+                  placeholder="We ship textiles to the EU, our CHA is on WhatsApp, and the buyer chases us for documents by email…"
+                ></textarea>
+              </label>
+
+              <!-- Honeypot. Real people never see this; bots fill it in. -->
+              <div class="hp" aria-hidden="true">
+                <label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+              </div>
+
+              <button class="btn btn--primary" type="submit" id="lead-submit">Request a demo</button>
+
+              <p class="form__note">
+                We use your details only to reply to you. No newsletter, no sharing with anyone.
+              </p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== final CTA -->
+      <section class="section section--bordered">
+        <div class="container">
+          <div class="final-cta">
+            <h2>Stop being the bridge between your buyer, your CHA and your forwarder.</h2>
+            <p>
+              Forward one email and see the shipment build itself — fields, sources, confidence and
+              all. It takes a few minutes and nothing has to change on your counterparties&rsquo;
+              side.
+            </p>
+            <div class="final-cta__actions">
+              <a class="btn btn--primary" href="#contact">Book a demo</a>
+              <a class="btn btn--ghost" href="#how-it-works">See how it works</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================================================================== -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__grid">
+          <div>
+            <a href="#top" class="wordmark">kambio<span>.</span></a>
+            <p>
+              The AI operating system for SME exporters. Structured shipments, permissioned
+              counterparties, humans in the loop.
+            </p>
+          </div>
+
+          <div>
+            <h3>Product</h3>
+            <ul>
+              <li><a href="#how-it-works">How it works</a></li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#shipment-room">Shipment room</a></li>
+              <li><a href="#contact">Book a demo</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Company</h3>
+            <ul>
+              <li><a href="#contact">Contact</a></li>
+              <li><a href="#trust">Security</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="site-footer__bottom">
+          <span>&copy; <span id="year">2026</span> Kambio. All rights reserved.</span>
+          <span>Made for exporters who are tired of copy-paste.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+
+      /* Submit without a page reload. The form still works with JS disabled —
+         contact.php renders its own thank-you page in that case. */
+      (function () {
+        var form = document.getElementById("lead-form");
+        var alertBox = document.getElementById("form-alert");
+        var submit = document.getElementById("lead-submit");
+        if (!form) return;
+
+        function show(kind, text) {
+          alertBox.className = "alert alert--" + kind;
+          alertBox.textContent = text;
+          alertBox.hidden = false;
+        }
+
+        form.addEventListener("submit", function (event) {
+          if (!form.reportValidity()) return;
+          event.preventDefault();
+
+          submit.disabled = true;
+          submit.textContent = "Sending…";
+          alertBox.hidden = true;
+
+          fetch(form.action, {
+            method: "POST",
+            body: new FormData(form),
+            headers: { Accept: "application/json" },
+          })
+            .then(function (res) {
+              return res.json().catch(function () {
+                throw new Error("bad response");
+              });
+            })
+            .then(function (data) {
+              if (data && data.ok) {
+                form.reset();
+                show("ok", "Thank you — we have your details and will be in touch shortly.");
+              } else {
+                show("err", (data && data.error) || "Something went wrong. Please try again.");
+              }
+            })
+            .catch(function () {
+              show(
+                "err",
+                "We could not send that. Please email us directly and we will pick it up.",
+              );
+            })
+            .finally(function () {
+              submit.disabled = false;
+              submit.textContent = "Request a demo";
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>
