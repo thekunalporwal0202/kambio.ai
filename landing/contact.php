@@ -12,14 +12,14 @@
 declare(strict_types=1);
 
 // ---------------------------------------------------------------------------
-// CHANGE ME — the two lines below are the only configuration.
+// Notification addresses. NOTIFY_FROM must stay on kambio.ai or mail is spam-filtered.
 // ---------------------------------------------------------------------------
 
 /** Where demo requests are emailed. */
-const NOTIFY_TO = 'hello@kambio.example';
+const NOTIFY_TO = 'kunal@kapinfinity.com';
 
 /** From address. MUST be on your own domain or the mail will be spam-filtered. */
-const NOTIFY_FROM = 'website@kambio.example';
+const NOTIFY_FROM = 'website@kambio.ai';
 
 // ---------------------------------------------------------------------------
 
