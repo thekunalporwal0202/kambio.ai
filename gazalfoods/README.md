@@ -56,24 +56,32 @@ not care which it is.
 
 ### The copy
 
-Section copy was written from the company's own published material — the 1996
-founding, the Kadhara facility in Wilayat of Suwaiq, ISO 22000 and HACCP
-certification, the five categories, the four stated principles, distribution
-across every governorate. The category descriptions under **The range** are
-written to the category rather than to a catalogue, because no per-SKU list was
-available; replace them with real pack sizes and product names when you have
-them to hand.
+Section copy is the company's **own published wording**, recovered from the
+existing site and its indexed pages rather than rewritten: the founding story
+("around three decades back from today the idea of Gazal Al Khadra Trading was
+conceived…"), the market-position and single-brand statements, the four
+vision-and-mission points, the ISO 22000:2005 and HACCP certification line, and
+the Kadhara facility description. Where the redesign needed a heading or a link
+label the original did not have, that is new writing; every factual claim on the
+page traces back to the company's material.
 
-Two placeholders are marked `CHANGE ME` in the source and must be filled in
-before this goes live:
+**What is still missing is the product catalogue.** The five category cards say
+what the company says about each category, but no per-SKU list, pack size or
+case configuration was recoverable. Replace those five card bodies with the real
+catalogue when you have it — they are the only place on the page written to the
+category rather than to the products.
 
-- `index.html` — the contact block has a postal address and an email but **no
-  telephone number**. Add the real published number.
-- `contact.php` — `NOTIFY_TO` and `NOTIFY_FROM` (see below).
+Two things in `index.html` need checking before this goes live:
+
+- **The telephone numbers** are marked `CONFIRM ME`. They came from trade
+  directory listings (Dun & Bradstreet, Made in Oman Gate, SearchArabia), not
+  from the company, so confirm both against the published numbers.
+- **The postal address, facility location and email** match the company's
+  published details, but are worth a glance for the same reason.
 
 ---
 
-## Before you upload — one edit
+## Before you upload — one edit (plus the checks above)
 
 **`contact.php`, lines 25 and 28.** Set where enquiries go:
 
