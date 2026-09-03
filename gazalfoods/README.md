@@ -81,6 +81,33 @@ Two things in `index.html` need checking before this goes live:
 
 ---
 
+## Previewing it before anything is deployed
+
+`build-demo.mjs` folds the site into a single self-contained `demo.html` that
+can be opened by double-clicking it, emailed, or published anywhere:
+
+```bash
+node gazalfoods/build-demo.mjs
+```
+
+It is generated from `index.html` and `styles.css` rather than maintained by
+hand, so it cannot drift from the site that actually ships. Re-run it after any
+edit. `demo.html` is gitignored for that reason — the script is the source, the
+file is the output.
+
+Three deliberate differences from the real site:
+
+1. **The CSS is inlined**, because the demo has to be one file.
+2. **It is marked as a proposal** — a strip across the top and a pill in the
+   header — so nobody can mistake it for the published gazalfoods.net.
+3. **The enquiry form is inert.** Every field is visible so the layout can be
+   judged, but submitting says plainly that nothing was sent. A preview form with
+   a working Send button silently swallows whatever anyone types into it.
+
+`demo.html` is not part of the site — do not upload it.
+
+---
+
 ## Before you upload — one edit (plus the checks above)
 
 **`contact.php`, lines 25 and 28.** Set where enquiries go:
