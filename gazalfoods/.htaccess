@@ -1,0 +1,67 @@
+# Noor Gazal — gazalfoods.net. Apache config for shared hosting.
+
+# --------------------------------------------------------------- HTTPS + host
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Force HTTPS. Most shared hosts terminate TLS upstream, so trust the
+  # forwarded header as well as the direct one.
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # One canonical hostname. The site has always been published as www, and the
+  # canonical link in index.html says www, so send the bare domain there.
+  # Flip this block (and the canonical tag) if you would rather drop the www.
+  RewriteCond %{HTTP_HOST} ^gazalfoods\.net$ [NC]
+  RewriteRule ^ https://www.gazalfoods.net%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ------------------------------------------------------------ never served up
+# The enquiry store lives under the web root because shared hosting gives us
+# nowhere else to write. Belt and braces: deny the directory, and deny the
+# file extension anywhere.
+RedirectMatch 404 ^/_leads(/.*)?$
+
+<FilesMatch "\.(jsonl|log|md)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# --------------------------------------------------------------------- headers
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+  # The page is fully self-contained: no external scripts, styles, fonts or
+  # images. The one inline <script> at the bottom of index.html is why
+  # 'unsafe-inline' appears under script-src and nowhere else.
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
+</IfModule>
+
+# --------------------------------------------------------------------- caching
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  # HTML stays fresh so edits show up immediately.
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml
+</IfModule>
+
+# ------------------------------------------------------------------ housekeeping
+DirectoryIndex index.html index.php
+ServerSignature Off
+Options -Indexes
